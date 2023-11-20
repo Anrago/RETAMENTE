@@ -1,117 +1,70 @@
-/*******************************************************************************************
-*
-*   raylib [shaders] example - Raymarching shapes generation
-*
-*   NOTE: This example requires raylib OpenGL 3.3 for shaders support and only #version 330
-*         is currently supported. OpenGL ES 2.0 platforms are not supported at the moment.
-*
-*   Example originally created with raylib 2.0, last time updated with raylib 4.2
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2018-2023 Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
-
 #include "raylib.h"
 
-#if defined(PLATFORM_DESKTOP)
-    #define GLSL_VERSION            330
-#else   // PLATFORM_ANDROID, PLATFORM_WEB -> Not supported at this moment
-    #define GLSL_VERSION            100
-#endif
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "raylib [shaders] example - raymarching shapes");
+    InitWindow(screenWidth, screenHeight, "Menu con Background - Raylib");
 
-    Camera camera = { 0 };
-    camera.position = (Vector3){ 2.5f, 2.5f, 3.0f };    // Camera position
-    camera.target = (Vector3){ 0.0f, 0.0f, 0.7f };      // Camera looking at point
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    camera.fovy = 65.0f;                                // Camera field-of-view Y
-    camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
-
-    // Load raymarching shader
-    // NOTE: Defining 0 (NULL) for vertex shader forces usage of internal default vertex shader
-    Shader shader = LoadShader(0, TextFormat("resources/shaders/glsl%i/raymarching.fs", GLSL_VERSION));
-
-    // Get shader locations for required uniforms
-    int viewEyeLoc = GetShaderLocation(shader, "viewEye");
-    int viewCenterLoc = GetShaderLocation(shader, "viewCenter");
-    int runTimeLoc = GetShaderLocation(shader, "runTime");
-    int resolutionLoc = GetShaderLocation(shader, "resolution");
-
-    float resolution[2] = { (float)screenWidth, (float)screenHeight };
-    SetShaderValue(shader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
-
-    float runTime = 0.0f;
-
-    DisableCursor();                    // Limit cursor to relative movement inside the window
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
-
-    // Main game loop
-    while (!WindowShouldClose())        // Detect window close button or ESC key
+    // Estructura del menu
+    enum MenuOption
     {
-        // Update
-        //----------------------------------------------------------------------------------
-        UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        START_GAME,
+        OPTIONS,
+        EXIT
+    };
 
-        float cameraPos[3] = { camera.position.x, camera.position.y, camera.position.z };
-        float cameraTarget[3] = { camera.target.x, camera.target.y, camera.target.z };
+    int selectedOption = START_GAME;
 
-        float deltaTime = GetFrameTime();
-        runTime += deltaTime;
+    Texture2D background = LoadTexture("assets/bg_menu.jpg");
 
-        // Set shader required uniform values
-        SetShaderValue(shader, viewEyeLoc, cameraPos, SHADER_UNIFORM_VEC3);
-        SetShaderValue(shader, viewCenterLoc, cameraTarget, SHADER_UNIFORM_VEC3);
-        SetShaderValue(shader, runTimeLoc, &runTime, SHADER_UNIFORM_FLOAT);
-
-        // Check if screen is resized
-        if (IsWindowResized())
+    while (!WindowShouldClose())
+    {
+        if (IsKeyPressed(KEY_DOWN))
         {
-            resolution[0] = (float)GetScreenWidth();
-            resolution[1] = (float)GetScreenHeight();
-            SetShaderValue(shader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
+            selectedOption = (selectedOption + 1) % 3;
         }
-        //----------------------------------------------------------------------------------
+        else if (IsKeyPressed(KEY_UP))
+        {
+            selectedOption = (selectedOption - 1 + 3) % 3;
+        }
 
-        // Draw
-        //----------------------------------------------------------------------------------
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            switch (selectedOption)
+            {
+            case START_GAME:
+
+                break;
+
+            case OPTIONS:
+
+                break;
+
+            case EXIT:
+                CloseWindow();
+                break;
+            }
+        }
+
+        // Background
+        DrawTexture(background, 0, 0, WHITE);
+
+        // Menu
+        DrawText("Retamente", (screenWidth - MeasureText("Retamente", 40)) / 2, 20, 40, DARKGRAY);
+
+        DrawText(selectedOption == START_GAME ? "> Iniciar Juego" : "Iniciar Juego", (screenWidth - MeasureText("Iniciar Juego", 20)) / 2, screenHeight / 2 - 20, 20, DARKGRAY);
+        DrawText(selectedOption == OPTIONS ? "> Opciones" : "Opciones", (screenWidth - MeasureText("Opciones", 20)) / 2, screenHeight / 2, 20, DARKGRAY);
+        DrawText(selectedOption == EXIT ? "> Salir" : "Salir", (screenWidth - MeasureText("Salir", 20)) / 2, screenHeight / 2 + 20, 20, DARKGRAY);
+
         BeginDrawing();
-
-            ClearBackground(RAYWHITE);
-
-            // We only draw a white full-screen rectangle,
-            // frame is generated in shader using raymarching
-            BeginShaderMode(shader);
-                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), WHITE);
-            EndShaderMode();
-
-            DrawText("(c) Raymarching shader by Iñigo Quilez. MIT License.", GetScreenWidth() - 280, GetScreenHeight() - 20, 10, BLACK);
-
         EndDrawing();
-        //----------------------------------------------------------------------------------
     }
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    UnloadShader(shader);           // Unload shader
+    UnloadTexture(background);
 
-    CloseWindow();                  // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+    CloseWindow();
 
     return 0;
 }
