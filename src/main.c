@@ -55,7 +55,7 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle);
 void StartGameUpdate();
 void StartGameDraw();
 void OptionsUpdate(Music menuMusic, Sound mySound);
-void OptionsDraw(Texture2D background);
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu);
 void CreditsUpdate();
 void CreditsDraw();
 
@@ -71,6 +71,8 @@ int main(void)
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
+    Image optionMenu = LoadImage("assets/optionMenu.png");
+    Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
 
     PlayMusicStream(menuMusic);
 
@@ -86,12 +88,13 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle);
             break;
         case START_GAME:
-            currentScene = START_GAME;
+            StartGameUpdate();
+            StartGameDraw();
             break;
         case OPTIONS:
             PlayMusic(menuMusic);
             OptionsUpdate(menuMusic, menuButton);
-            OptionsDraw(background);
+            OptionsDraw(background, optionMenuTexture, optionMenu);
             break;
         case CREDITS:
             currentScene = CREDITS;
@@ -184,6 +187,9 @@ void StartGameUpdate()
 
 void StartGameDraw()
 {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound)
@@ -238,11 +244,11 @@ void OptionsUpdate(Music menuMusic, Sound mySound)
     }
 }
 
-void OptionsDraw(Texture2D background)
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu)
 {
     BeginDrawing();
     DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, RAYWHITE);
-
+    DrawTexture(optionMenuTexture, screenWidth / 2 - optionMenu.width / 2, 60, WHITE);
     for (int i = 0; i < sizeof(optionItems) / sizeof(optionItems[0]); i++)
     {
         float textWidth = MeasureText(optionItems[i].text, 40);
