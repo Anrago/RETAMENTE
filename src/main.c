@@ -51,7 +51,7 @@ OptionItem optionItems[] = {
 
 void PlayMusic(Music music);
 void MenuUpdate(Sound mySound);
-void MenuDraw(Texture2D background);
+void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle);
 void StartGameUpdate();
 void StartGameDraw();
 void OptionsUpdate(Music menuMusic, Sound mySound);
@@ -69,6 +69,8 @@ int main(void)
     Image bgImage = LoadImage("assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
     Sound menuButton = LoadSound("assets/menuButton.wav");
+    Image tittle = LoadImage("assets/tittle.png");
+    Texture2D tittleTexture = LoadTextureFromImage(tittle);
 
     PlayMusicStream(menuMusic);
 
@@ -81,7 +83,7 @@ int main(void)
         case MENU:
             PlayMusic(menuMusic);
             MenuUpdate(menuButton);
-            MenuDraw(background);
+            MenuDraw(background, tittleTexture, tittle);
             break;
         case START_GAME:
             currentScene = START_GAME;
@@ -106,6 +108,7 @@ int main(void)
     UnloadImage(bgImage);
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
+
     CloseAudioDevice();
     CloseWindow();
 
@@ -153,11 +156,11 @@ void MenuUpdate(Sound mySound)
     }
 }
 
-void MenuDraw(Texture2D background)
+void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle)
 {
     BeginDrawing();
     DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, RAYWHITE);
-
+    DrawTexture(tittleTexture, screenWidth / 2 - tittle.width / 2, 60, WHITE);
     for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
@@ -172,7 +175,6 @@ void MenuDraw(Texture2D background)
         }
         DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
     }
-
     EndDrawing();
 }
 
