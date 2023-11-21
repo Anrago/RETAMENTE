@@ -1,13 +1,5 @@
 #include "raylib.h"
 
-void PlayMusic(Music music);
-void StartGameUpdate();
-void StartGameDraw();
-void OptionsUpdate();
-void OptionsDraw();
-void CreditsUpdate();
-void CreditsDraw();
-
 float timePlayed = 0.0f;
 typedef enum MenuOption
 {
@@ -24,6 +16,14 @@ typedef struct
     MenuOption action;
 } MenuItem;
 
+void PlayMusic(Music music);
+void StartGameUpdate();
+void StartGameDraw();
+void OptionsUpdate();
+void OptionsDraw();
+void CreditsUpdate();
+void CreditsDraw();
+
 int main(void)
 {
     const int screenWidth = 1280;
@@ -38,8 +38,8 @@ int main(void)
         {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Créditos", CREDITS},
         {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Salir", EXIT}};
 
-    Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
-    Image bgImage = LoadImage("assets/bg_menu.png");
+    Music menuMusic = LoadMusicStream("build/assets/menuMusic.mp3");
+    Image bgImage = LoadImage("build/assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
 
     int EXIT_FLAG = 1;
