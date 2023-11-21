@@ -13,6 +13,14 @@ typedef enum
     EXIT
 } GameScene;
 
+typedef enum
+{
+    MUTE_MUSIC,
+    MUTE_SOUNDS,
+    CHANGE_RESOLUTION,
+    BACK_TO_MENU
+} OptionAction;
+
 GameScene currentScene = MENU;
 typedef struct
 {
@@ -21,17 +29,30 @@ typedef struct
     GameScene action;
 } MenuItem;
 
+typedef struct
+{
+    Rectangle bounds;
+    const char *text;
+    OptionAction action;
+} OptionItem;
+
 MenuItem menuItems[] = {
     {{screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 40}, "Iniciar", START_GAME},
     {{screenWidth / 2 - 100, screenHeight / 2 - 10, 200, 40}, "Opciones", OPTIONS},
     {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Créditos", CREDITS},
     {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Salir", EXIT}};
 
+OptionItem optionItems[] = {
+    {{screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 40}, "Silenciar Musica"},
+    {{screenWidth / 2 - 100, screenHeight / 2 - 10, 200, 40}, "Silenciar efectos de sonido"},
+    {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Cambiar resolucion"},
+    {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Volver al menu"}};
+
 void PlayMusic(Music music);
 void StartGameUpdate();
 void StartGameDraw();
 void OptionsUpdate();
-void OptionsDraw();
+void OptionsDraw(Texture2D background);
 void CreditsUpdate();
 void CreditsDraw();
 
@@ -39,6 +60,7 @@ int main(void)
 {
     InitWindow(screenWidth, screenHeight, "retamente");
     InitAudioDevice();
+    SetTargetFPS(60);
 
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
     Image bgImage = LoadImage("assets/bg_menu.png");
@@ -48,12 +70,8 @@ int main(void)
 
     int EXIT_FLAG = 1;
 
-    PlayMusic(menuMusic);
-    SetTargetFPS(60);
-
     while (!WindowShouldClose() && EXIT_FLAG)
     {
-
         switch (currentScene)
         {
         case MENU:
@@ -65,8 +83,9 @@ int main(void)
             currentScene = START_GAME;
             break;
         case OPTIONS:
+            PlayMusic(menuMusic);
             OptionsUpdate();
-            OptionsDraw();
+            OptionsDraw(background);
             break;
         case CREDITS:
             currentScene = CREDITS;
@@ -155,10 +174,11 @@ void OptionsUpdate()
 {
 }
 
-void OptionsDraw()
+void OptionsDraw(Texture2D background)
 {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, RAYWHITE);
+    DrawText("Menu de Opciones", GetScreenWidth() / 2 - MeasureText("Menu de Opciones", 60) / 2, 40, 60, BLACK);
     EndDrawing();
 }
 
