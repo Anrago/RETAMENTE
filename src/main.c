@@ -54,25 +54,38 @@ int main(void)
     {
         switch (currentScene)
         {
-        case MENU:
-            PlayMusic(menuMusic);
-            MenuUpdate();
-            MenuDraw(background);
-            break;
-        case START_GAME:
-            // Funciones del juego
-            break;
-        case OPTIONS:
-            OptionsDraw();
-            break;
-        case CREDITS:
-            // Funciones de créditos
-            break;
-        case EXIT:
-            EXIT_FLAG = 0;
-            break;
-        default:
-            break;
+            DrawRectangleRec(menuItems[i].bounds, RAYWHITE);
+            DrawText(menuItems[i].text, menuItems[i].bounds.x + 20, menuItems[i].bounds.y + 10, 20, BLACK);
+        }
+
+        // Verifica clics en el menú
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            Vector2 mousePoint = GetMousePosition();
+
+            for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
+            {
+                if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+                {
+                    switch (menuItems[i].action)
+                    {
+                    case START_GAME:
+                        // Funciones del juego
+                        break;
+                    case OPTIONS:
+                        // Funciones de opciones
+                        break;
+                    case CREDITS:
+                        // Funciones de créditos
+                        break;
+                    case EXIT:
+                        EXIT_FLAG = 0;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
         }
     }
 
