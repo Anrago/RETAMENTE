@@ -1,84 +1,107 @@
 #include "raylib.h"
 
-void playMusic(Music music);
+void PlayMusic(Music music);
+void StartGameUpdate();
+void StartGameDraw();
+void OptionsUpdate();
+void OptionsDraw();
+void CreditsUpdate();
+void CreditsDraw();
 
 float timePlayed = 0.0f;
+typedef enum MenuOption
+{
+    START_GAME,
+    OPTIONS,
+    CREDITS,
+    EXIT
+} MenuOption;
+
+typedef struct
+{
+    Rectangle bounds;
+    const char *text;
+    MenuOption action;
+} MenuItem;
 
 int main(void)
 {
     const int screenWidth = 1280;
     const int screenHeight = 720;
-
-    InitWindow(screenWidth, screenHeight, "Menu con Background - Raylib");
+    InitWindow(screenWidth, screenHeight, "Simple Menu - Raylib");
     InitAudioDevice();
 
-    enum MenuOption
-    {
-        START_GAME,
-        OPTIONS,
-        EXIT
-    };
-
-    int selectedOption = START_GAME;
+    // Define las opciones del menú
+    MenuItem menuItems[] = {
+        {{screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 40}, "Iniciar", START_GAME},
+        {{screenWidth / 2 - 100, screenHeight / 2 - 10, 200, 40}, "Opciones", OPTIONS},
+        {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Créditos", CREDITS},
+        {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Salir", EXIT}};
 
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
-    Image bg_image = LoadImage("assets/bg_menu.png");
-    Texture2D background = LoadTextureFromImage(bg_image);
+    Image bgImage = LoadImage("assets/bg_menu.png");
+    Texture2D background = LoadTextureFromImage(bgImage);
+
+    int EXIT_FLAG = 1;
 
     SetTargetFPS(60);
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && EXIT_FLAG)
     {
-        playMusic(menuMusic);
+        PlayMusic(menuMusic);
 
-        if (IsKeyPressed(KEY_DOWN))
+        BeginDrawing();
+        DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, RAYWHITE);
+
+        for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
         {
-            selectedOption = (selectedOption + 1) % 3;
-        }
-        else if (IsKeyPressed(KEY_UP))
-        {
-            selectedOption = (selectedOption - 1 + 3) % 3;
+            DrawRectangleRec(menuItems[i].bounds, RAYWHITE);
+            DrawText(menuItems[i].text, menuItems[i].bounds.x + 20, menuItems[i].bounds.y + 10, 20, BLACK);
         }
 
-        if (IsKeyPressed(KEY_ENTER))
+        // Verifica clics en el menú
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            switch (selectedOption)
+            Vector2 mousePoint = GetMousePosition();
+
+            for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
             {
-            case START_GAME:
-
-                break;
-
-            case OPTIONS:
-
-                break;
-
-            case EXIT:
-                CloseWindow();
-                break;
+                if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+                {
+                    switch (menuItems[i].action)
+                    {
+                    case START_GAME:
+                        // Funciones del juego
+                        break;
+                    case OPTIONS:
+                        // Funciones de opciones
+                        break;
+                    case CREDITS:
+                        // Funciones de créditos
+                        break;
+                    case EXIT:
+                        EXIT_FLAG = 0;
+                        break;
+                    default:
+                        break;
+                    }
+                }
             }
         }
 
-        BeginDrawing();
-
-        DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, WHITE);
-
-        DrawText("Retamente", (screenWidth - MeasureText("Retamente", 40)) / 2, 20, 40, DARKGRAY);
-
-        DrawText(selectedOption == START_GAME ? "> Iniciar Juego" : "Iniciar Juego", (screenWidth - MeasureText("Iniciar Juego", 20)) / 2, screenHeight / 2 - 20, 20, DARKGRAY);
-        DrawText(selectedOption == OPTIONS ? "> Opciones" : "Opciones", (screenWidth - MeasureText("Opciones", 20)) / 2, screenHeight / 2, 20, DARKGRAY);
-        DrawText(selectedOption == EXIT ? "> Salir" : "Salir", (screenWidth - MeasureText("Salir", 20)) / 2, screenHeight / 2 + 20, 20, DARKGRAY);
         EndDrawing();
     }
 
     UnloadTexture(background);
-    UnloadImage(bg_image);
+    UnloadImage(bgImage);
     UnloadMusicStream(menuMusic);
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;
 }
 
-void playMusic(Music music)
+void PlayMusic(Music music)
 {
     PlayMusicStream(music);
     UpdateMusicStream(music);
@@ -87,4 +110,28 @@ void playMusic(Music music)
 
     if (timePlayed >= 0.99f)
         timePlayed = 1.0f;
+}
+
+void StartGameUpdate()
+{
+}
+
+void StartGameDraw()
+{
+}
+
+void OptionsUpdate()
+{
+}
+
+void OptionsDraw()
+{
+}
+
+void CreditsUpdate()
+{
+}
+
+void CreditsDraw()
+{
 }
