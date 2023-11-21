@@ -2,7 +2,10 @@
 
 const int screenWidth = 1280;
 const int screenHeight = 720;
+
+const int MAX_FPS = 60;
 float timePlayed = 0.0f;
+int EXIT_FLAG = 1;
 
 typedef enum
 {
@@ -49,6 +52,8 @@ OptionItem optionItems[] = {
     {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Cambiar resolucion"},
     {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Volver al menu"}};
 
+// PROTOTYPES //
+//================================================================================================//
 void PlayMusic(Music music);
 void MenuUpdate(Sound mySound);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle);
@@ -58,27 +63,29 @@ void OptionsUpdate(Music menuMusic, Sound mySound);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu);
 void CreditsUpdate();
 void CreditsDraw();
+//================================================================================================//
 
 int main(void)
 {
-    InitWindow(screenWidth, screenHeight, "retamente");
+    InitWindow(screenWidth, screenHeight, "RetaMente");
     InitAudioDevice();
-    SetTargetFPS(60);
+    SetTargetFPS(MAX_FPS);
 
+    // MAIN MENU & OPTIONS MENU //
+    //================================================================================================//
+    Image tittle = LoadImage("assets/tittle.png");
+    Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
     Image bgImage = LoadImage("assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
     Sound menuButton = LoadSound("assets/menuButton.wav");
-    Image tittle = LoadImage("assets/tittle.png");
-    Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
+    //================================================================================================//
 
     PlayMusicStream(menuMusic);
 
-    int EXIT_FLAG = 1;
-
-    while (!WindowShouldClose() && EXIT_FLAG)
+        while (!WindowShouldClose() && EXIT_FLAG)
     {
         switch (currentScene)
         {
@@ -117,7 +124,12 @@ int main(void)
 
     return 0;
 }
-
+ /*
+    Function: PlayMusic
+    Description: Plays the music in loop.
+    Parameters: Music music
+    Returns: nothing
+ */
 void PlayMusic(Music music)
 {
     UpdateMusicStream(music);
@@ -159,6 +171,7 @@ void MenuUpdate(Sound mySound)
     }
 }
 
+
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle)
 {
     BeginDrawing();
@@ -191,6 +204,7 @@ void StartGameDraw()
     ClearBackground(RAYWHITE);
     EndDrawing();
 }
+
 
 void OptionsUpdate(Music menuMusic, Sound mySound)
 {
