@@ -62,6 +62,7 @@ int main(void)
         // Verifica clics en el menú
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
+            
             Vector2 mousePoint = GetMousePosition();
 
             for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
