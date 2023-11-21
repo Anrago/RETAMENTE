@@ -15,6 +15,7 @@ typedef enum
 
 typedef enum
 {
+    NOTHING,
     MUTE_MUSIC,
     MUTE_SOUNDS,
     CHANGE_RESOLUTION,
@@ -84,7 +85,7 @@ int main(void)
             break;
         case OPTIONS:
             PlayMusic(menuMusic);
-            OptionsUpdate();
+            OptionsUpdate(menuMusic);
             OptionsDraw(background);
             break;
         case CREDITS:
@@ -141,8 +142,6 @@ void MenuUpdate()
                 case EXIT:
                     currentScene = EXIT;
                     break;
-                default:
-                    break;
                 }
             }
         }
@@ -170,8 +169,47 @@ void StartGameDraw()
 {
 }
 
-void OptionsUpdate()
+void OptionsUpdate(Music menuMusic)
 {
+    bool muteMusic = false;
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
+        {
+            if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+            {
+                switch (menuItems[i].action)
+                {
+                case MUTE_MUSIC:
+                    muteMusic = !muteMusic;
+                    if (muteMusic)
+                    {
+                        SetMusicVolume(menuMusic, 0.0f);
+                    }
+                    else
+                    {
+                        SetMusicVolume(menuMusic, 1.0f); // no se desmutea 😿
+                    }
+                    break;
+
+                case MUTE_SOUNDS:
+
+                    break;
+
+                case CHANGE_RESOLUTION:
+
+                    break;
+
+                case BACK_TO_MENU:
+                    currentScene = MENU;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void OptionsDraw(Texture2D background)
@@ -179,6 +217,11 @@ void OptionsDraw(Texture2D background)
     BeginDrawing();
     DrawTextureRec(background, (Rectangle){0, 0, screenWidth, screenHeight}, (Vector2){0, 0}, RAYWHITE);
     DrawText("Menu de Opciones", GetScreenWidth() / 2 - MeasureText("Menu de Opciones", 60) / 2, 40, 60, BLACK);
+    for (int i = 0; i < sizeof(optionItems) / sizeof(optionItems[0]); i++)
+    {
+        DrawRectangleRec(optionItems[i].bounds, RAYWHITE);
+        DrawText(optionItems[i].text, optionItems[i].bounds.x + 20, optionItems[i].bounds.y + 10, 20, BLACK);
+    }
     EndDrawing();
 }
 
