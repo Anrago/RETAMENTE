@@ -37,7 +37,7 @@ void CreditsDraw();
 
 int main(void)
 {
-    InitWindow(screenWidth, screenHeight, "Simple Menu - Raylib");
+    InitWindow(screenWidth, screenHeight, "retamente");
     InitAudioDevice();
 
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
@@ -48,44 +48,34 @@ int main(void)
 
     int EXIT_FLAG = 1;
 
-    SetTargetFPS(60);
     PlayMusic(menuMusic);
+    SetTargetFPS(60);
+
     while (!WindowShouldClose() && EXIT_FLAG)
     {
+
         switch (currentScene)
         {
-            DrawRectangleRec(menuItems[i].bounds, RAYWHITE);
-            DrawText(menuItems[i].text, menuItems[i].bounds.x + 20, menuItems[i].bounds.y + 10, 20, BLACK);
-        }
-
-        // Verifica clics en el menú
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            Vector2 mousePoint = GetMousePosition();
-
-            for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++)
-            {
-                if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
-                {
-                    switch (menuItems[i].action)
-                    {
-                    case START_GAME:
-                        // Funciones del juego
-                        break;
-                    case OPTIONS:
-                        // Funciones de opciones
-                        break;
-                    case CREDITS:
-                        // Funciones de créditos
-                        break;
-                    case EXIT:
-                        EXIT_FLAG = 0;
-                        break;
-                    default:
-                        break;
-                    }
-                }
-            }
+        case MENU:
+            PlayMusic(menuMusic);
+            MenuUpdate();
+            MenuDraw(background);
+            break;
+        case START_GAME:
+            currentScene = START_GAME;
+            break;
+        case OPTIONS:
+            OptionsUpdate();
+            OptionsDraw();
+            break;
+        case CREDITS:
+            currentScene = CREDITS;
+            break;
+        case EXIT:
+            EXIT_FLAG = 0;
+            break;
+        default:
+            break;
         }
     }
 
