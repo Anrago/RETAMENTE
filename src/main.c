@@ -28,16 +28,14 @@ MenuItem menuItems[] = {
     {{screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 40}, "Créditos", CREDITS},
     {{screenWidth / 2 - 100, screenHeight / 2 + 90, 200, 40}, "Salir", EXIT}};
 
+void Roulette(Texture2D arrowTexture);
 void PlayMusic(Music music);
-void StartGameUpdate();
+void StartGameUpdate(Texture2D arrowTexture);
 void StartGameDraw();
 void OptionsUpdate();
 void OptionsDraw();
 void CreditsUpdate();
 void CreditsDraw();
-
-
-
 
 typedef struct
 {
@@ -66,24 +64,16 @@ void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, 
     DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
 }
 
-
-
-
-
-
-
-
-
 int main(void)
 {
-    
+
     InitWindow(screenWidth, screenHeight, "retamente");
     InitAudioDevice();
 
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
     Image bgImage = LoadImage("assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
-
+    Texture2D arrowTexture = LoadTexture("assets/Flecha.png");
     PlayMusicStream(menuMusic);
 
     int EXIT_FLAG = 1;
@@ -102,7 +92,7 @@ int main(void)
             MenuDraw(background);
             break;
         case START_GAME:
-            StartGameUpdate();
+            StartGameUpdate(arrowTexture);
             break;
         case OPTIONS:
             OptionsUpdate();
@@ -183,21 +173,48 @@ void MenuDraw(Texture2D background)
     EndDrawing();
 }
 
-void StartGameUpdate()
+void StartGameUpdate(Texture2D arrowTexture)
 {
-     Texture2D arrowTexture = LoadTexture("assets/Flecha.png");
+    Roulette(arrowTexture);
+}
+
+void StartGameDraw()
+{
+}
+
+void OptionsUpdate()
+{
+}
+
+void OptionsDraw()
+{
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
+}
+
+void CreditsUpdate()
+{
+}
+
+void CreditsDraw()
+{
+}
+
+void Roulette(Texture2D arrowTexture)
+{
 
     // Definir los sectores de la ruleta
-    int sectorCount = 2;
-    RouletteSector sectors[2] = {
-        {0, 180, RED},
-        {180, 360, BLUE}
-        // {90, 135, GREEN},
-        // {135, 180, YELLOW},
-        // {180, 225, ORANGE},
-        // {225, 270, PINK},
-        // {270, 315, SKYBLUE},
-        // {315, 360, PURPLE},
+    int sectorCount = 8;
+    RouletteSector sectors[8] = {
+        {0, 45, RED},
+        {45, 90, BLUE},
+        {90, 135, RED},
+        {135, 180, BLUE},
+        {180, 225, RED},
+        {225, 270, BLUE},
+        {270, 315, RED},
+        {315, 360, BLUE},
     };
 
     float rotationSpeed = 0.0f;
@@ -243,33 +260,11 @@ void StartGameUpdate()
         {
             DrawText("Arrow is on RED!", 10, 10, 20, RED);
         }
+        if (arrowColor.r == 0 && arrowColor.g == 0 && arrowColor.b == 255)
+        {
+            DrawText("Arrow is on BLUE!", 10, 10, 20, BLUE);
+        }
 
         EndDrawing();
     }
-
-    // De-inicialización
-    UnloadTexture(arrowTexture);
-}
-
-void StartGameDraw()
-{
-}
-
-void OptionsUpdate()
-{
-}
-
-void OptionsDraw()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
-}
-
-void CreditsUpdate()
-{
-}
-
-void CreditsDraw()
-{
 }
