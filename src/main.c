@@ -174,7 +174,17 @@ void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 
         for (int i = 0; i < menuItemsCount; i++)
         {
-            if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+            float textWidth = MeasureText(menuItems[i].text, 40);
+            float x = (GetScreenWidth() - textWidth) / 2;
+
+            // Ajustar la posición de la colisión para centrar horizontalmente
+            Rectangle centeredBounds = {
+                x,
+                menuItems[i].bounds.y,
+                textWidth,
+                menuItems[i].bounds.height};
+
+            if (CheckCollisionPointRec(mousePoint, centeredBounds))
             {
                 PlaySound(mySound);
                 switch (menuItems[i].action)
@@ -206,16 +216,22 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
 
-        float x = menuItems[i].bounds.x + (menuItems[i].bounds.width - textWidth) / 2;
+        float x = (GetScreenWidth() - textWidth) / 2;
 
         Color textColor = BLACK;
 
-        if (CheckCollisionPointRec(GetMousePosition(), menuItems[i].bounds))
+        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
+
+        if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
         {
             textColor = YELLOW;
         }
-        DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
+
+        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
+
+        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
     }
+
     EndDrawing();
 }
 
