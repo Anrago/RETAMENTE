@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -42,22 +44,51 @@ typedef struct
     OptionAction action;
 } OptionItem;
 
+typedef struct
+{
+    float startAngle;
+    float endAngle;
+    Color color;
+} RouletteSector;
+
+/*
+--------------------------------------------------------------------------------------------------
+*/
+bool CheckAngleInSector(float angle, RouletteSector sector)
+{
+    return angle >= sector.startAngle && angle < sector.endAngle;
+}
+
+const char *GetColorName(Color color)
+{
+    if (color.r == 255 && color.g == 0 && color.b == 0)
+        return "RED";
+    else if (color.r == 0 && color.g == 0 && color.b == 255)
+        return "BLUE";
+    // Agrega más condiciones según sea necesario para otros colores
+    else
+        return "UNKNOWN COLOR";
+}
+
 // PROTOTYPES //
 //================================================================================================//
 void PlayMusic(Music music);
 void ChangeResolution();
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate();
+void StartGameUpdate(int screenWidth, int screenHeight);
 void StartGameDraw();
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
 void CreditsUpdate();
 void CreditsDraw();
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight);
+void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color);
 //================================================================================================//
 
 int main(void)
 {
+    srand(time(NULL));
     int screenWidth = screenWidths[currentResolutionIndex];
     int screenHeight = screenHeights[currentResolutionIndex];
     InitWindow(screenWidth, screenHeight, "RetaMente");
@@ -109,8 +140,8 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
             break;
         case START_GAME:
-            StartGameUpdate();
-            StartGameDraw();
+            StartGameUpdate(screenWidth, screenHeight);
+
             break;
         case OPTIONS:
             PlayMusic(menuMusic);
@@ -238,8 +269,97 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     EndDrawing();
 }
 
-void StartGameUpdate()
+void StartGameUpdate(int screenWidth, int screenHeight)
 {
+    char *n;
+    int num;
+    Color raund;
+    int band = 0;
+    if (!band)
+    {
+        num = rand() % 2 + 1;
+        band = 1;
+    }
+
+    if (num == 1)
+    {
+        raund = RED;
+    }
+    else
+    {
+        raund = BLUE;
+    }
+    while (!WindowShouldClose())
+    {
+        n = LoadFileText("questions/Prub.txt");
+        BeginDrawing();
+        ClearBackground(raund);
+        DrawText(n, 190, 200, 20, BLACK);
+        EndDrawing();
+    }
+
+    // Definir los sectores de la ruleta
+    // int sectorCount = 8;
+    // RouletteSector sectors[8] = {
+    //     {0, 45, RED},
+    //     {45, 90, BLUE},
+    //     {90, 135, RED},
+    //     {135, 180, BLUE},
+    //     {180, 225, RED},
+    //     {225, 270, BLUE},
+    //     {270, 315, RED},
+    //     {315, 360, BLUE}};
+
+    // float rotationSpeed = 0.0f;
+    // float rotation = 0.0f;
+    // bool spinning = false;
+
+    // // Crear una textura simple para representar la flecha
+    // RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
+    // BeginTextureMode(arrowTexture);
+    // ClearBackground(BLANK);
+
+    // // Dibujar la flecha en la textura
+    // DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
+
+    // EndTextureMode();
+
+    // while (!WindowShouldClose())
+    // {
+    //     // Actualizar
+    //     if (IsKeyPressed(KEY_SPACE) && !spinning)
+    //     {
+    //         spinning = true;
+    //         rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
+    //     }
+
+    //     if (spinning)
+    //     {
+    //         rotation += rotationSpeed;
+    //         rotationSpeed *= 0.99f;
+
+    //         if (rotationSpeed < 0.1f)
+    //         {
+    //             spinning = false;
+    //             rotationSpeed = 0.0f;
+    //         }
+    //     }
+
+    //     // Dibujar
+    //     BeginDrawing();
+    //     ClearBackground(RAYWHITE);
+
+    //     DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+
+    //     // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
+    //     Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+    //     DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+
+    //     EndDrawing();
+    // }
+
+    // // De-inicialización
+    // UnloadRenderTexture(arrowTexture);
 }
 
 void StartGameDraw()
@@ -332,4 +452,25 @@ void CreditsUpdate()
 
 void CreditsDraw()
 {
+}
+
+/*
+--------------------------------------------------------------------------------------------------
+*/
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight)
+{
+    float radius = 200.0f;
+    Vector2 center = {screenWidth / 2.0f, screenHeight / 2.0f};
+
+    for (int i = 0; i < sectorCount; i++)
+    {
+        DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
+    }
+
+    DrawCircle(center.x, center.y, radius - 10, RAYWHITE);
+}
+
+void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
+{
+    DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
 }
