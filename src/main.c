@@ -1,7 +1,8 @@
 #include "raylib.h"
 #include <stdio.h>
 #include <math.h>
-#include <bool.h>
+#include <stdlib.h>
+#include <time.h>
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -83,7 +84,7 @@ void ChangeResolution();
 bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate();
+void StartGameUpdate(int screenWidth, int screenHeight);
 void StartGameDraw();
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
@@ -144,7 +145,7 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
             break;
         case START_GAME:
-            StartGameUpdate();
+            StartGameUpdate(screenWidth, screenHeight);
             StartGameDraw();
             break;
         case OPTIONS:
@@ -296,8 +297,14 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     EndDrawing();
 }
 
-void StartGameUpdate()
+void StartGameUpdate(int screenWidth, int screenHeight)
 {
+    Timer timer;
+    timer.startTime = GetTime();
+    timer.countdown = 10;
+
+    GameState gameState = GAME;
+
     char *n;
     int num;
     Color raund;
@@ -331,73 +338,47 @@ void StartGameUpdate()
 
     while (!WindowShouldClose())
     {
-        // Actualizar
-        if (IsKeyPressed(KEY_SPACE) && !spinning)
-        {
-            spinning = true;
-            rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
-            PlaySound(mySound);
-        }
-
-        if (spinning)
-        {
-            rotation += rotationSpeed;
-            rotationSpeed *= 0.99f;
-
-            if (rotationSpeed < 0.1f)
-            {
-                spinning = false;
-                rotationSpeed = 0.0f;
-                int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
-                Color stoppedColor = sectors[sectorIndex].color;
-                currentQuestion = 1;
-                if (ColorToInt(stoppedColor) != ColorToInt(RED))
-                {
-                    questionUpdate("MATE.txt");
-                }
-                else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
-                {
-                    questionUpdate("ESPA.txt");
-                }
-            }
-        }
-
-        // Dibujar
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
-
-        // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
-        Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
-        DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
-
-        EndDrawing();
-    }
-
-    // De-inicialización
-    UnloadRenderTexture(arrowTexture);
-}
-
-void StartGameDraw()
-{
-    Timer timer;
-    timer.startTime = GetTime();
-    timer.countdown = 10;
-
-    GameState gameState = GAME;
-
-    while (!WindowShouldClose())
-    {
         switch (gameState)
         {
         case GAME:
-            // Actualización del juego en StartGameUpdate (puedes agregar lógica aquí)
+            if (IsKeyPressed(KEY_SPACE) && !spinning)
+            {
+                spinning = true;
+                rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
+                PlaySound(mySound);
+            }
 
-            // Dibujo del juego en StartGameDraw
+            if (spinning)
+            {
+                rotation += rotationSpeed;
+                rotationSpeed *= 0.99f;
+
+                if (rotationSpeed < 0.1f)
+                {
+                    spinning = false;
+                    rotationSpeed = 0.0f;
+                    int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
+                    Color stoppedColor = sectors[sectorIndex].color;
+                    currentQuestion = 1;
+                    if (ColorToInt(stoppedColor) != ColorToInt(RED))
+                    {
+                        questionUpdate("MATE.txt");
+                    }
+                    else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
+                    {
+                        questionUpdate("ESPA.txt");
+                    }
+                }
+            }
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
+            DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+
+            // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
+            Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+            DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+
             EndDrawing();
 
             // Verificar si el temporizador llega a cero
@@ -419,14 +400,19 @@ void StartGameDraw()
 
             EndDrawing();
 
-            // Verificar si se hace clic en el botón
             if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 currentScene = MENU;
             }
             break;
         }
+
+        UnloadRenderTexture(arrowTexture);
     }
+}
+
+void StartGameDraw()
+{
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
