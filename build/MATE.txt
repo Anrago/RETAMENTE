@@ -3,7 +3,7 @@ a) 10
 b) 12
 c) 14
 d) 15
-c
+b
 ¿Cuántos lados tiene un hexágono?
 a) 5
 b) 6
@@ -33,13 +33,7 @@ a) 45
 b) 60
 c) 90
 d) 180
-c
-Si un artículo cuesta $25 y tiene un descuento del 20%, ¿cuánto se paga después del descuento?
-a) $15
-b) $20
-c) $22
-d) $30
-a
+d
 ¿Cuánto es la raíz cuadrada de 81?
 a) 6
 b) 8

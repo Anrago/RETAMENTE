@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX_QUESTIONS 20
+#define MAX_QUESTIONS 10
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -334,7 +334,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
                 rotationSpeed = 0.0f;
                 int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
                 Color stoppedColor = sectors[sectorIndex].color;
-
+                currentQuestion = 1;
                 if (ColorToInt(stoppedColor) != ColorToInt(RED))
                 {
                     questionUpdate("MATE.txt");
@@ -498,8 +498,11 @@ void questionUpdate(char filename[])
 {
     FILE *fp = fopen(filename, "r");
 
-    int answer;
+    char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
     Tquestion preguntas[MAX_QUESTIONS];
+
+    Color originalColor = BLACK;
+    Color hoverColor = YELLOW;
 
     if (fp == NULL)
     {
@@ -508,26 +511,61 @@ void questionUpdate(char filename[])
     }
     else
     {
-        while (!WindowShouldClose())
-        {
+        Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
+
+        while (currentQuestion < MAX_QUESTIONS)
+        {   
+            answer = 'x';
             readFile(fp, preguntas);
 
             BeginDrawing();
             ClearBackground(RAYWHITE);
-            DrawText(preguntas[currentQuestion].question, 190, 200, 20, BLACK);
 
+            DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
+
+            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
-                DrawText(preguntas[currentQuestion].answer[j], 190, 250 + j * 50, 20, BLACK);
+                float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
+                answerRect[j] = (Rectangle){190, 250 + j * 50, textWidth, 20};
+
+                Vector2 mousePointLocal = {GetMouseX() - 190, GetMouseY() - answerRect[j].y};
+
+                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
+
+                    // Si se hizo clic en la respuesta, actualiza la variable 'answer'
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                    {
+                        if (j == 0)
+                        {
+                            answer = 'a';
+                        }
+                        else if (j == 1)
+                        {
+                            answer = 'b';
+                        }
+                        else if (j == 2)
+                        {
+                            answer = 'c';
+                        }
+                        else if (j == 3)
+                        {
+                            answer = 'd';
+                        }
+                    }
+                }
+                else
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
+                }
+                printf("%c", answer);
             }
 
-            if (IsKeyPressed(KEY_SPACE))
+            if (answer == preguntas[currentQuestion].correctAnswer)
             {
                 currentQuestion++;
-                if (currentQuestion >= MAX_QUESTIONS)
-                {
-                    currentQuestion = 0;
-                }
             }
 
             EndDrawing();
