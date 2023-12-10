@@ -225,6 +225,121 @@ bool CheckAngleInSector(float angle, RouletteSector sector)
     return angle >= sector.startAngle && angle < sector.endAngle;
 }
 
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight)
+{
+    float radius = 200.0f;
+    Vector2 center = {screenWidth / 2.0f, screenHeight / 2.0f};
+
+    for (int i = 0; i < sectorCount; i++)
+    {
+        DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
+    }
+
+    DrawCircle(center.x, center.y, radius - 10, RAYWHITE);
+}
+
+void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
+{
+    DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
+}
+
+void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
+{
+    int j = 0;
+    static int ant;
+    if (currentQuestion != ant)
+    {
+        fgets(preguntas[currentQuestion].question, 256, fp);
+        while (j < 4)
+        {
+            fgets(preguntas[currentQuestion].answer[j], 256, fp);
+            j++;
+        }
+        fscanf(fp, "%c", &preguntas[currentQuestion].correctAnswer);
+        fgetc(fp);
+        ant = currentQuestion;
+    }
+}
+
+void questionUpdate(char filename[])
+{
+    FILE *fp = fopen(filename, "r");
+
+    char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
+    Tquestion preguntas[MAX_QUESTIONS];
+
+    Color originalColor = BLACK;
+    Color hoverColor = YELLOW;
+
+    if (fp == NULL)
+    {
+        printf("Error al abrir el archivo");
+        exit(1);
+    }
+    else
+    {
+        Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
+
+        while (currentQuestion < MAX_QUESTIONS)
+        {
+            answer = 'x';
+            readFile(fp, preguntas);
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+
+            DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
+
+            // Dibujar las respuestas y verificar el color según la posición del ratón
+            for (int j = 0; j < 4; j++)
+            {
+                float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
+                answerRect[j] = (Rectangle){190, 250 + j * 50, textWidth, 20};
+
+                Vector2 mousePointLocal = {GetMouseX() - 190, GetMouseY() - answerRect[j].y};
+
+                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
+
+                    // Si se hizo clic en la respuesta, actualiza la variable 'answer'
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                    {
+                        if (j == 0)
+                        {
+                            answer = 'a';
+                        }
+                        else if (j == 1)
+                        {
+                            answer = 'b';
+                        }
+                        else if (j == 2)
+                        {
+                            answer = 'c';
+                        }
+                        else if (j == 3)
+                        {
+                            answer = 'd';
+                        }
+                    }
+                }
+                else
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
+                }
+            }
+
+            if (answer == preguntas[currentQuestion].correctAnswer)
+            {
+                currentQuestion++;
+            }
+
+            EndDrawing();
+        }
+        fclose(fp);
+    }
+}
+
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
