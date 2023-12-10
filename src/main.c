@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <stdio.h>
 #include <math.h>
+#include <bool.h>
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -57,10 +58,29 @@ typedef struct
     int countdown;
 } Timer;
 
+typedef struct
+{
+    float startAngle;
+    float endAngle;
+    Color color;
+} RouletteSector;
+
+const char *GetColorName(Color color)
+{
+    if (color.r == 255 && color.g == 0 && color.b == 0)
+        return "RED";
+    else if (color.r == 0 && color.g == 0 && color.b == 255)
+        return "BLUE";
+    // Agrega más condiciones según sea necesario para otros colores
+    else
+        return "UNKNOWN COLOR";
+}
+
 // PROTOTYPES //
 //================================================================================================//
 void PlayMusic(Music music);
 void ChangeResolution();
+bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
 void StartGameUpdate();
@@ -197,6 +217,11 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
 
     DrawRectangleRec(barRect, GREEN);
     DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
+}
+
+bool CheckAngleInSector(float angle, RouletteSector sector)
+{
+    return angle >= sector.startAngle && angle < sector.endAngle;
 }
 
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
