@@ -288,6 +288,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
     int num;
     Color raund;
     int band = 0;
+    Sound mySound = LoadSound("assets/Roulette Sound.mp3");
 
     int sectorCount = 8;
     RouletteSector sectors[8] = {
@@ -321,6 +322,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
         {
             spinning = true;
             rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
+            PlaySound(mySound);
         }
 
         if (spinning)
@@ -560,7 +562,6 @@ void questionUpdate(char filename[])
                 {
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
-                printf("%c", answer);
             }
 
             if (answer == preguntas[currentQuestion].correctAnswer)
