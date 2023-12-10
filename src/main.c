@@ -15,7 +15,9 @@ const int MAX_FPS = 60;
 float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
 int currentQuestion = 1;
-
+int correctAnswers = 0;
+int finalScore = 0;
+int remainingSeconds;
 typedef struct question
 {
     char question[100];
@@ -92,8 +94,8 @@ void ChangeResolution();
 bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate(int screenWidth, int screenHeight);
-void StartGameDraw();
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background);
+void StartGameDraw(Texture2D background);
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
 void CreditsUpdate();
@@ -136,6 +138,8 @@ int main(void)
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
     Image bgImage = LoadImage("assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
+    Image bgGame = LoadImage("assets/bg_game.png");
+    Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
@@ -153,8 +157,7 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
             break;
         case START_GAME:
-            StartGameUpdate(screenWidth, screenHeight);
-            StartGameDraw();
+            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame);
             break;
         case OPTIONS:
             PlayMusic(menuMusic);
@@ -176,6 +179,12 @@ int main(void)
     UnloadImage(bgImage);
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
+    UnloadTexture(tittleTexture);
+    UnloadImage(tittle);
+    UnloadTexture(backgroundGame);
+    UnloadImage(bgGame);
+    UnloadTexture(optionMenuTexture);
+    UnloadImage(optionMenu);
 
     CloseAudioDevice();
     CloseWindow();
@@ -204,6 +213,7 @@ void PlayMusic(Music music)
     Parameters: nothing
     Returns: nothing
  */
+
 void ChangeResolution()
 {
     currentResolutionIndex = (currentResolutionIndex + 1) % resolutionsCount;
@@ -217,14 +227,14 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
 
     int currentTime = GetTime();
     int elapsedSeconds = currentTime - timer.startTime;
-    int remainingSeconds = timer.countdown - elapsedSeconds;
+    remainingSeconds = timer.countdown - elapsedSeconds;
 
     float barWidth = (float)elapsedSeconds / timer.countdown * screenWidth;
-    Rectangle barRect = {0, 0, barWidth, barHeight};
+    Rectangle barComplete = {0, 0, barWidth, barHeight};
 
     Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
 
-    DrawRectangleRec(barRect, GREEN);
+    DrawRectangleRec(barComplete, RED);
     DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
 }
 
@@ -273,7 +283,7 @@ void questionUpdate(char filename[])
 {
     FILE *fp = fopen(filename, "r");
 
-    char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
+    char answer;
     Question preguntas[MAX_QUESTIONS];
 
     Color originalColor = BLACK;
@@ -286,7 +296,7 @@ void questionUpdate(char filename[])
     }
     else
     {
-        Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
+        Rectangle answerRect[4];
 
         while (currentQuestion < MAX_QUESTIONS)
         {
@@ -294,11 +304,9 @@ void questionUpdate(char filename[])
             readFile(fp, preguntas);
 
             BeginDrawing();
-            ClearBackground(RAYWHITE);
 
             DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
 
-            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
                 float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
@@ -310,7 +318,6 @@ void questionUpdate(char filename[])
                 {
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
 
-                    // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                     {
                         if (j == 0)
@@ -341,7 +348,7 @@ void questionUpdate(char filename[])
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
             }
-            
+
             printf("%d\n", correctAnswers);
 
             EndDrawing();
@@ -422,19 +429,18 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     EndDrawing();
 }
 
-void StartGameUpdate(int screenWidth, int screenHeight)
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background)
 {
     Timer timer;
     timer.startTime = GetTime();
-    timer.countdown = 10;
+    timer.countdown = 5;
 
     GameState gameState = GAME;
 
     char *n;
     int num;
-    Color raund;
     int band = 0;
-    Sound mySound = LoadSound("assets/Roulette Sound.mp3");
+    Sound rouletteSound = LoadSound("assets/Roulette Sound.mp3");
     bool shouldClose = false;
 
     int sectorCount = 8;
@@ -454,7 +460,6 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 
     RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
     BeginTextureMode(arrowTexture);
-    ClearBackground(BLANK);
 
     DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
 
@@ -468,8 +473,10 @@ void StartGameUpdate(int screenWidth, int screenHeight)
             if (IsKeyPressed(KEY_SPACE) && !spinning)
             {
                 spinning = true;
-                rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
-                PlaySound(mySound);
+                rotationSpeed = 20.0f + GetRandomValue(-5, 5);
+
+                // Falta gregarlo a assets
+                PlaySound(rouletteSound);
             }
 
             if (spinning)
@@ -494,8 +501,9 @@ void StartGameUpdate(int screenWidth, int screenHeight)
                     }
                 }
             }
+
             BeginDrawing();
-            ClearBackground(RAYWHITE);
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
             DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
 
@@ -508,39 +516,40 @@ void StartGameUpdate(int screenWidth, int screenHeight)
             {
                 gameState = GAME_OVER;
             }
+
             break;
 
         case GAME_OVER:
-            Rectangle buttonRect = {(GetScreenWidth() - 200) / 2, GetScreenHeight() / 2, 200, 50};
+            Rectangle buttonRect = {(GetScreenWidth() - 200) / 2, GetScreenHeight() / 2, 230, 50};
+            Color buttonColor = BLACK;
+
+            BeginDrawing();
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            // Cambiar por una imagen
+            DrawText("¡Fin del juego!", GetScreenWidth() / 2 - MeasureText("¡Fin del juego!", 40) / 2, GetScreenHeight() / 2 - 40, 40, RED);
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
+            {
+                buttonColor = YELLOW;
+            }
 
             if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
+                PlaySound(mySound);
+
                 shouldClose = true;
                 currentScene = MENU;
+                correctAnswers = 0;
+                currentQuestion = 1;
             }
 
-            BeginDrawing();
-            ClearBackground(RAYWHITE);
-
-            DrawText("¡Fin del juego!", GetScreenWidth() / 2 - MeasureText("¡Fin del juego!", 40) / 2, GetScreenHeight() / 2 - 40, 40, RED);
-
-            DrawRectangleRec(buttonRect, BLUE);
-            DrawText("Volver al Menú", buttonRect.x + 20, buttonRect.y + 10, 20, WHITE);
+            DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 30, buttonColor);
 
             EndDrawing();
 
             break;
         }
-
-        UnloadRenderTexture(arrowTexture);
     }
-}
-
-void StartGameDraw()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
