@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -27,6 +28,13 @@ typedef enum
     BACK_TO_MENU
 } OptionAction;
 
+typedef enum
+{
+    MENU2,
+    GAME,
+    GAME_OVER
+} GameState;
+
 GameScene currentScene = MENU;
 typedef struct
 {
@@ -41,6 +49,12 @@ typedef struct
     const char *text;
     OptionAction action;
 } OptionItem;
+
+typedef struct
+{
+    int startTime;
+    int countdown;
+} Timer;
 
 // PROTOTYPES //
 //================================================================================================//
@@ -166,6 +180,24 @@ void ChangeResolution()
     SetWindowSize(screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]);
 }
 
+void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
+{
+    int barHeight = 30;
+    int padding = 10;
+
+    int currentTime = GetTime();
+    int elapsedSeconds = currentTime - timer.startTime;
+    int remainingSeconds = timer.countdown - elapsedSeconds;
+
+    float barWidth = (float)elapsedSeconds / timer.countdown * screenWidth;
+    Rectangle barRect = {0, 0, barWidth, barHeight};
+
+    Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
+
+    DrawRectangleRec(barRect, GREEN);
+    DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
+}
+
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -177,12 +209,15 @@ void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
             float textWidth = MeasureText(menuItems[i].text, 40);
             float x = (GetScreenWidth() - textWidth) / 2;
 
-            // Ajustar la posición de la colisión para centrar horizontalmente
             Rectangle centeredBounds = {
                 x,
                 menuItems[i].bounds.y,
                 textWidth,
                 menuItems[i].bounds.height};
+
+            Vector2 mousePointLocal = {
+                GetMouseX() - centeredBounds.x,
+                GetMouseY() - centeredBounds.y};
 
             if (CheckCollisionPointRec(mousePoint, centeredBounds))
             {
@@ -241,9 +276,52 @@ void StartGameUpdate()
 
 void StartGameDraw()
 {
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
+    Timer timer;
+    timer.startTime = GetTime();
+    timer.countdown = 10;
+
+    GameState gameState = GAME;
+
+    while (!WindowShouldClose())
+    {
+        switch (gameState)
+        {
+        case GAME:
+            // Actualización del juego en StartGameUpdate (puedes agregar lógica aquí)
+
+            // Dibujo del juego en StartGameDraw
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
+            EndDrawing();
+
+            // Verificar si el temporizador llega a cero
+            if (GetTime() - timer.startTime >= timer.countdown)
+            {
+                gameState = GAME_OVER;
+            }
+            break;
+
+        case GAME_OVER:
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+
+            DrawText("¡Fin del juego!", GetScreenWidth() / 2 - MeasureText("¡Fin del juego!", 40) / 2, GetScreenHeight() / 2 - 40, 40, RED);
+
+            Rectangle buttonRect = {(GetScreenWidth() - 200) / 2, GetScreenHeight() / 2, 200, 50};
+            DrawRectangleRec(buttonRect, BLUE);
+            DrawText("Volver al Menú", buttonRect.x + 20, buttonRect.y + 10, 20, WHITE);
+
+            EndDrawing();
+
+            // Verificar si se hace clic en el botón
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                currentScene = MENU;
+            }
+            break;
+        }
+    }
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
@@ -257,6 +335,19 @@ void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuIt
 
         for (int i = 0; i < menuItemsCount; i++)
         {
+            float textWidth = MeasureText(menuItems[i].text, 40);
+            float x = (GetScreenWidth() - textWidth) / 2;
+
+            Rectangle centeredBounds = {
+                x,
+                menuItems[i].bounds.y,
+                textWidth,
+                menuItems[i].bounds.height};
+
+            Vector2 mousePointLocal = {
+                GetMouseX() - centeredBounds.x,
+                GetMouseY() - centeredBounds.y};
+
             if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
             {
                 PlaySound(mySound);
@@ -308,16 +399,20 @@ void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image option
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
 
-        float x = menuItems[i].bounds.x + (menuItems[i].bounds.width - textWidth) / 2;
+        float x = (GetScreenWidth() - textWidth) / 2;
 
         Color textColor = BLACK;
 
-        if (CheckCollisionPointRec(GetMousePosition(), menuItems[i].bounds))
+        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
+
+        if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
         {
             textColor = YELLOW;
         }
 
-        DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
+        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
+
+        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
     }
 
     EndDrawing();
