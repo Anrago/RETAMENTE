@@ -329,6 +329,11 @@ void questionUpdate(char filename[])
                         {
                             answer = 'd';
                         }
+                        if (answer == preguntas[currentQuestion].correctAnswer)
+                        {
+                            correctAnswers++;
+                        }
+                        currentQuestion++;
                     }
                 }
                 else
@@ -336,11 +341,8 @@ void questionUpdate(char filename[])
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
             }
-
-            if (answer == preguntas[currentQuestion].correctAnswer)
-            {
-                currentQuestion++;
-            }
+            
+            printf("%d\n", correctAnswers);
 
             EndDrawing();
         }
