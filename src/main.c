@@ -513,7 +513,7 @@ void questionUpdate(char filename[])
     {
         Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
-        while (currentQuestion < MAX_QUESTIONS)
+        while (currentQuestion < MAX_QUESTIONS && !WindowShouldClose())
         {
             answer = 'x';
             readFile(fp, preguntas);
