@@ -375,7 +375,6 @@ void StartGameUpdate(int screenWidth, int screenHeight)
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
             DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
 
-            // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
             Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
 
