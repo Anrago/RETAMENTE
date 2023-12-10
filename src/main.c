@@ -289,7 +289,6 @@ void StartGameUpdate(int screenWidth, int screenHeight)
     Color raund;
     int band = 0;
     Sound mySound = LoadSound("assets/Roulette Sound.mp3");
-
     int sectorCount = 8;
     RouletteSector sectors[8] = {
         {0, 45, RED},
@@ -312,7 +311,6 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 
     // Dibujar la flecha en la textura
     DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
-
     EndTextureMode();
 
     while (!WindowShouldClose())
@@ -516,7 +514,7 @@ void questionUpdate(char filename[])
         Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
         while (currentQuestion < MAX_QUESTIONS)
-        {   
+        {
             answer = 'x';
             readFile(fp, preguntas);
 
