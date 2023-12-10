@@ -10,6 +10,7 @@ int currentResolutionIndex = 0;
 const int MAX_FPS = 60;
 float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
+int currentQuestion = 1;
 
 typedef enum
 {
