@@ -424,7 +424,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 {
     Timer timer;
     timer.startTime = GetTime();
-    timer.countdown = 60;
+    timer.countdown = 10;
 
     GameState gameState = GAME;
 
@@ -433,6 +433,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
     Color raund;
     int band = 0;
     Sound mySound = LoadSound("assets/Roulette Sound.mp3");
+    bool shouldClose = false;
 
     int sectorCount = 8;
     RouletteSector sectors[8] = {
@@ -457,7 +458,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 
     EndTextureMode();
 
-    while (!WindowShouldClose())
+    while (!shouldClose)
     {
         switch (gameState)
         {
@@ -508,21 +509,24 @@ void StartGameUpdate(int screenWidth, int screenHeight)
             break;
 
         case GAME_OVER:
+            Rectangle buttonRect = {(GetScreenWidth() - 200) / 2, GetScreenHeight() / 2, 200, 50};
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                shouldClose = true;
+                currentScene = MENU;
+            }
+
             BeginDrawing();
             ClearBackground(RAYWHITE);
 
             DrawText("¡Fin del juego!", GetScreenWidth() / 2 - MeasureText("¡Fin del juego!", 40) / 2, GetScreenHeight() / 2 - 40, 40, RED);
 
-            Rectangle buttonRect = {(GetScreenWidth() - 200) / 2, GetScreenHeight() / 2, 200, 50};
             DrawRectangleRec(buttonRect, BLUE);
             DrawText("Volver al Menú", buttonRect.x + 20, buttonRect.y + 10, 20, WHITE);
 
             EndDrawing();
 
-            if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                currentScene = MENU;
-            }
             break;
         }
 
