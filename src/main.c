@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define MAX_QUESTIONS 20
+
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
 const int screenHeights[] = {720, 1200, 1080};
@@ -11,6 +13,15 @@ int currentResolutionIndex = 0;
 const int MAX_FPS = 60;
 float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
+
+int currentQuestion = 1;
+
+typedef struct question
+{
+    char question[100];
+    char answer[4][100];
+    char correctAnswer;
+} Tquestion;
 
 typedef enum
 {
@@ -84,6 +95,8 @@ void CreditsUpdate();
 void CreditsDraw();
 void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight);
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color);
+void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS]);
+void questionUpdate(char filename[]);
 //================================================================================================//
 
 int main(void)
@@ -256,91 +269,79 @@ void StartGameUpdate(int screenWidth, int screenHeight)
     int num;
     Color raund;
     int band = 0;
-    if (!band)
-    {
-        num = rand() % 2 + 1;
-        band = 1;
-    }
 
-    if (num == 1)
-    {
-        raund = RED;
-    }
-    else
-    {
-        raund = BLUE;
-    }
+    int sectorCount = 8;
+    RouletteSector sectors[8] = {
+        {0, 45, RED},
+        {45, 90, BLUE},
+        {90, 135, RED},
+        {135, 180, BLUE},
+        {180, 225, RED},
+        {225, 270, BLUE},
+        {270, 315, RED},
+        {315, 360, BLUE}};
+
+    float rotationSpeed = 0.0f;
+    float rotation = 0.0f;
+    bool spinning = false;
+
+    // Crear una textura simple para representar la flecha
+    RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
+    BeginTextureMode(arrowTexture);
+    ClearBackground(BLANK);
+
+    // Dibujar la flecha en la textura
+    DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
+
+    EndTextureMode();
+
     while (!WindowShouldClose())
     {
-        n = LoadFileText("questions/Prub.txt");
+        // Actualizar
+        if (IsKeyPressed(KEY_SPACE) && !spinning)
+        {
+            spinning = true;
+            rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
+        }
+
+        if (spinning)
+        {
+            rotation += rotationSpeed;
+            rotationSpeed *= 0.99f;
+
+            if (rotationSpeed < 0.1f)
+            {
+                spinning = false;
+                rotationSpeed = 0.0f;
+                int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
+                Color stoppedColor = sectors[sectorIndex].color;
+
+                if (ColorToInt(stoppedColor) != ColorToInt(RED))
+                {
+                    questionUpdate("MATE.txt");
+                }
+                else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
+                {
+                    questionUpdate("ESPA.txt");
+                }
+            }
+        }
+
+        // Dibujar
         BeginDrawing();
-        ClearBackground(raund);
-        DrawText(n, 190, 200, 20, BLACK);
+        ClearBackground(RAYWHITE);
+
+        DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+
+        // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
+        Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+        DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+
         EndDrawing();
     }
 
-    // Definir los sectores de la ruleta
-    // int sectorCount = 8;
-    // RouletteSector sectors[8] = {
-    //     {0, 45, RED},
-    //     {45, 90, BLUE},
-    //     {90, 135, RED},
-    //     {135, 180, BLUE},
-    //     {180, 225, RED},
-    //     {225, 270, BLUE},
-    //     {270, 315, RED},
-    //     {315, 360, BLUE}};
-
-    // float rotationSpeed = 0.0f;
-    // float rotation = 0.0f;
-    // bool spinning = false;
-
-    // // Crear una textura simple para representar la flecha
-    // RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
-    // BeginTextureMode(arrowTexture);
-    // ClearBackground(BLANK);
-
-    // // Dibujar la flecha en la textura
-    // DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
-
-    // EndTextureMode();
-
-    // while (!WindowShouldClose())
-    // {
-    //     // Actualizar
-    //     if (IsKeyPressed(KEY_SPACE) && !spinning)
-    //     {
-    //         spinning = true;
-    //         rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
-    //     }
-
-    //     if (spinning)
-    //     {
-    //         rotation += rotationSpeed;
-    //         rotationSpeed *= 0.99f;
-
-    //         if (rotationSpeed < 0.1f)
-    //         {
-    //             spinning = false;
-    //             rotationSpeed = 0.0f;
-    //         }
-    //     }
-
-    //     // Dibujar
-    //     BeginDrawing();
-    //     ClearBackground(RAYWHITE);
-
-    //     DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
-
-    //     // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
-    //     Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
-    //     DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
-
-    //     EndDrawing();
-    // }
-
-    // // De-inicialización
-    // UnloadRenderTexture(arrowTexture);
+    // De-inicialización
+    UnloadRenderTexture(arrowTexture);
 }
 
 void StartGameDraw()
@@ -454,4 +455,64 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
 {
     DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
+}
+
+void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
+{
+    int j = 0;
+    static int ant;
+    if (currentQuestion != ant)
+    {
+        fgets(preguntas[currentQuestion].question, 256, fp);
+        while (j < 4)
+        {
+            fgets(preguntas[currentQuestion].answer[j], 256, fp);
+            j++;
+        }
+        fscanf(fp, "%c", &preguntas[currentQuestion].correctAnswer);
+        fgetc(fp);
+        ant = currentQuestion;
+    }
+}
+
+void questionUpdate(char filename[])
+{
+    FILE *fp = fopen(filename, "r");
+
+    int answer;
+    Tquestion preguntas[MAX_QUESTIONS];
+
+    if (fp == NULL)
+    {
+        printf("Error al abrir el archivo");
+        exit(1);
+    }
+    else
+    {
+        while (!WindowShouldClose())
+        {
+            readFile(fp, preguntas);
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawText(preguntas[currentQuestion].question, 190, 200, 20, BLACK);
+
+            for (int j = 0; j < 4; j++)
+            {
+                DrawText(preguntas[currentQuestion].answer[j], 190, 250 + j * 50, 20, BLACK);
+            }
+
+            if (IsKeyPressed(KEY_SPACE))
+            {
+                currentQuestion++;
+                if (currentQuestion >= MAX_QUESTIONS)
+                {
+                    currentQuestion = 0;
+                }
+            }
+
+            EndDrawing();
+        }
+        fclose(fp);
+    }
 }
