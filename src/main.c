@@ -15,7 +15,7 @@ float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
 
 int currentQuestion = 1;
-
+int correctAnswers = 0;
 typedef struct question
 {
     char question[100];
@@ -554,6 +554,11 @@ void questionUpdate(char filename[])
                         {
                             answer = 'd';
                         }
+                        if (answer == preguntas[currentQuestion].correctAnswer)
+                        {
+                            correctAnswers++;
+                        }
+                        currentQuestion++;
                     }
                 }
                 else
@@ -562,11 +567,7 @@ void questionUpdate(char filename[])
                 }
             }
 
-            if (answer == preguntas[currentQuestion].correctAnswer)
-            {
-                currentQuestion++;
-            }
-
+            printf("%d\n", correctAnswers);
             EndDrawing();
         }
         fclose(fp);
