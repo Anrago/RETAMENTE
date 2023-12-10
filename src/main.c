@@ -272,6 +272,85 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
 
 void StartGameUpdate()
 {
+    char *n;
+    int num;
+    Color raund;
+    int band = 0;
+    Sound mySound = LoadSound("assets/Roulette Sound.mp3");
+
+    int sectorCount = 8;
+    RouletteSector sectors[8] = {
+        {0, 45, RED},
+        {45, 90, BLUE},
+        {90, 135, RED},
+        {135, 180, BLUE},
+        {180, 225, RED},
+        {225, 270, BLUE},
+        {270, 315, RED},
+        {315, 360, BLUE}};
+
+    float rotationSpeed = 0.0f;
+    float rotation = 0.0f;
+    bool spinning = false;
+
+    // Crear una textura simple para representar la flecha
+    RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
+    BeginTextureMode(arrowTexture);
+    ClearBackground(BLANK);
+
+    // Dibujar la flecha en la textura
+    DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
+
+    EndTextureMode();
+
+    while (!WindowShouldClose())
+    {
+        // Actualizar
+        if (IsKeyPressed(KEY_SPACE) && !spinning)
+        {
+            spinning = true;
+            rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
+            PlaySound(mySound);
+        }
+
+        if (spinning)
+        {
+            rotation += rotationSpeed;
+            rotationSpeed *= 0.99f;
+
+            if (rotationSpeed < 0.1f)
+            {
+                spinning = false;
+                rotationSpeed = 0.0f;
+                int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
+                Color stoppedColor = sectors[sectorIndex].color;
+                currentQuestion = 1;
+                if (ColorToInt(stoppedColor) != ColorToInt(RED))
+                {
+                    questionUpdate("MATE.txt");
+                }
+                else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
+                {
+                    questionUpdate("ESPA.txt");
+                }
+            }
+        }
+
+        // Dibujar
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+
+        // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
+        Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+        DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+
+        EndDrawing();
+    }
+
+    // De-inicialización
+    UnloadRenderTexture(arrowTexture);
 }
 
 void StartGameDraw()
