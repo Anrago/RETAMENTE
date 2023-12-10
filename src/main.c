@@ -413,6 +413,9 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 
 void StartGameDraw()
 {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
