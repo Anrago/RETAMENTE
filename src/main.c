@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define MAX_QUESTIONS 10
+
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
 const int screenHeights[] = {720, 1200, 1080};
@@ -14,6 +16,12 @@ float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
 int currentQuestion = 1;
 
+typedef struct question
+{
+    char question[100];
+    char answer[4][100];
+    char correctAnswer;
+} Question;
 typedef enum
 {
     MENU,
@@ -243,7 +251,7 @@ void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, 
     DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
 }
 
-void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
+void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
 {
     int j = 0;
     static int ant;
@@ -266,7 +274,7 @@ void questionUpdate(char filename[])
     FILE *fp = fopen(filename, "r");
 
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
-    Tquestion preguntas[MAX_QUESTIONS];
+    Question preguntas[MAX_QUESTIONS];
 
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
@@ -416,7 +424,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 {
     Timer timer;
     timer.startTime = GetTime();
-    timer.countdown = 10;
+    timer.countdown = 60;
 
     GameState gameState = GAME;
 
@@ -441,12 +449,10 @@ void StartGameUpdate(int screenWidth, int screenHeight)
     float rotation = 0.0f;
     bool spinning = false;
 
-    // Crear una textura simple para representar la flecha
     RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
     BeginTextureMode(arrowTexture);
     ClearBackground(BLANK);
 
-    // Dibujar la flecha en la textura
     DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
 
     EndTextureMode();
@@ -495,7 +501,6 @@ void StartGameUpdate(int screenWidth, int screenHeight)
 
             EndDrawing();
 
-            // Verificar si el temporizador llega a cero
             if (GetTime() - timer.startTime >= timer.countdown)
             {
                 gameState = GAME_OVER;
