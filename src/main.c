@@ -291,8 +291,10 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight, Font myFo
     Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
 
     DrawRectangleRec(barComplete, RED);
-    DrawTextEx(myFont, TextFormat("%02ds", remainingSeconds), timerPosition, 20, 0, BLACK);
-    DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
+
+    // SetTextureFilter(myFont.texture, FILTER_POINT);
+
+    DrawTextEx(myFont, TextFormat("Tiempo restante: %02ds", remainingSeconds), (Vector2){timerPosition.x, timerPosition.y}, 20, 2, BLACK);
 }
 
 bool CheckAngleInSector(float angle, RouletteSector sector)
