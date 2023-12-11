@@ -322,18 +322,24 @@ void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, 
 
 void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
 {
-    int j = 0;
-    static int ant;
-    if (currentQuestion != ant)
+    static int ant = -1;
+
+    if (currentQuestion != ant && currentQuestion < MAX_QUESTIONS)
     {
-        fgets(preguntas[currentQuestion].question, 256, fp);
-        while (j < 4)
+        fseek(fp, 0, SEEK_SET); // Coloca el cursor al principio del archivo
+
+        // Avanza hasta la posición de la pregunta actual
+        for (int i = 0; i <= currentQuestion; ++i)
         {
-            fgets(preguntas[currentQuestion].answer[j], 256, fp);
-            j++;
+            fgets(preguntas[i].question, 256, fp);
+            for (int j = 0; j < 4; j++)
+            {
+                fgets(preguntas[i].answer[j], 256, fp);
+            }
+            fscanf(fp, "%c", &preguntas[i].correctAnswer);
+            fgetc(fp);
         }
-        fscanf(fp, "%c", &preguntas[currentQuestion].correctAnswer);
-        fgetc(fp);
+
         ant = currentQuestion;
     }
 }
@@ -343,8 +349,11 @@ void questionUpdate(char filename[], Texture2D background)
     FILE *fp = fopen(filename, "r");
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
     Sound Incorrect = LoadSound("assets/INCORRECTO.mp3");
+    static long int filePos = 0;
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
+    fseek(fp, filePos, SEEK_SET);
     Question preguntas[MAX_QUESTIONS];
+    int i = 0;
 
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
@@ -358,7 +367,7 @@ void questionUpdate(char filename[], Texture2D background)
     {
         Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
-        while (currentQuestion < MAX_QUESTIONS && !WindowShouldClose())
+        while (i < 5 && !WindowShouldClose())
         {
             answer = 'x';
             readFile(fp, preguntas);
@@ -367,12 +376,14 @@ void questionUpdate(char filename[], Texture2D background)
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
 
+            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
             float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
             float x = (GetScreenWidth() - textWidth) / 2;
             float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
             DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
 
+            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
                 textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
@@ -382,7 +393,7 @@ void questionUpdate(char filename[], Texture2D background)
 
                 if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
                 {
-                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, hoverColor);
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
 
                     // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -412,12 +423,14 @@ void questionUpdate(char filename[], Texture2D background)
                         {
                             PlaySound(Incorrect);
                         }
+                        filePos = ftell(fp);
+                        i++; // Mueve i antes del incremento de currentQuestion
                         currentQuestion++;
                     }
                 }
                 else
                 {
-                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, originalColor);
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
             }
             EndDrawing();
@@ -425,7 +438,6 @@ void questionUpdate(char filename[], Texture2D background)
         fclose(fp);
     }
 }
-
 void RunCountdown(int seconds, Texture2D areYouReadyTexture, Texture2D number3Texture, Texture2D number2Texture, Texture2D number1Texture, Texture2D background)
 {
     CountdownState countdownState = {seconds, GetTime(), false};
@@ -548,7 +560,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
 {
     Timer timer;
     timer.startTime = GetTime();
-    timer.countdown = 15;
+    timer.countdown = 30;
 
     GameState gameState = GAME;
 
