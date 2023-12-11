@@ -463,7 +463,7 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     float radius = 200.0f;
     float centerX = GetScreenWidth() / 2.0f;
     float centerY = GetScreenHeight() / 2.0f;
-
+    
     Vector2 center = {centerX, centerY};
 
     for (int i = 0; i < sectorCount; i++)
@@ -472,7 +472,7 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     }
 
     // Ajuste para centrar correctamente la ruleta
-    DrawCircle(centerX, centerY, radius - 10, RAYWHITE);
+    
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -501,10 +501,12 @@ void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
 void questionUpdate(char filename[])
 {
     FILE *fp = fopen(filename, "r");
-
+    Sound Correct = LoadSound("assets/CORRECTO.mp3");
+    Sound Incorrect = LoadSound("assets/INCORRECTO.mp3");
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
     Tquestion preguntas[MAX_QUESTIONS];
 
+    
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -528,7 +530,7 @@ void questionUpdate(char filename[])
             // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
             float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
             float x = (GetScreenWidth() - textWidth) / 2;
-            float y = GetScreenHeight() / 2 - 50; // Ajustar la posición vertical según sea necesario
+            float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
             DrawText(preguntas[currentQuestion].question, x, y, 20, originalColor);
 
@@ -565,7 +567,12 @@ void questionUpdate(char filename[])
                         }
                         if (answer == preguntas[currentQuestion].correctAnswer)
                         {
+                            PlaySound(Correct);
                             correctAnswers++;
+                        }
+                        else
+                        {
+                            PlaySound(Incorrect);
                         }
                         currentQuestion++;
                     }
