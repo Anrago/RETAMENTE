@@ -6,20 +6,6 @@
 
 #define MAX_QUESTIONS 10
 
-const int resolutionsCount = 3;
-const int screenWidths[] = {1280, 1600, 1920};
-const int screenHeights[] = {720, 1200, 1080};
-int currentResolutionIndex = 0;
-
-const int MAX_FPS = 60;
-float timePlayed = 0.0f;
-int EXIT_FLAG = 1;
-int currentQuestion = 1;
-int correctAnswers = 0;
-int finalScore = 0;
-int remainingSeconds;
-Font myFont;
-
 typedef struct question
 {
     char question[100];
@@ -84,6 +70,22 @@ typedef struct
     double timer;
     bool transition;
 } CountdownState;
+
+const int resolutionsCount = 3;
+const int screenWidths[] = {1280, 1600, 1920};
+const int screenHeights[] = {720, 1200, 1080};
+int currentResolutionIndex = 0;
+
+const int MAX_FPS = 60;
+float timePlayed = 0.0f;
+int EXIT_FLAG = 1;
+int currentQuestion = 1;
+int correctAnswers = 0;
+int finalScore = 0;
+int remainingSeconds;
+Font myFont;
+
+Timer timer;
 
 const char *GetColorName(Color color)
 {
@@ -558,7 +560,6 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
 
 void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver)
 {
-    Timer timer;
     timer.startTime = GetTime();
     timer.countdown = 30;
 
@@ -633,11 +634,10 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawRoulette(sectors, sectorCount, rotation);
-            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
             Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
-
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
             EndDrawing();
 
             if (GetTime() - timer.startTime >= timer.countdown)
