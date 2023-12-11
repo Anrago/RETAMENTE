@@ -198,7 +198,8 @@ int main(void)
             break;
 
         case CREDITS:
-            currentScene = CREDITS;
+            CreditsUpdate();
+            CreditsDraw();
             break;
 
         case EXIT:
@@ -755,4 +756,7 @@ void CreditsUpdate()
 
 void CreditsDraw()
 {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
 }
