@@ -93,7 +93,7 @@ void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuIt
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
 void CreditsUpdate();
 void CreditsDraw();
-void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight);
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation);
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color);
 void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS]);
 void questionUpdate(char filename[]);
@@ -350,10 +350,10 @@ void StartGameUpdate(int screenWidth, int screenHeight)
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+        DrawRoulette(sectors, sectorCount, rotation);
 
         // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
-        Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+        Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight()/ 2.0f - 199.0f};
         DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
 
         EndDrawing();
@@ -458,17 +458,21 @@ void CreditsDraw()
 /*
 --------------------------------------------------------------------------------------------------
 */
-void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight)
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
 {
     float radius = 200.0f;
-    Vector2 center = {screenWidth / 2.0f, screenHeight / 2.0f};
+    float centerX = GetScreenWidth() / 2.0f;
+    float centerY = GetScreenHeight() / 2.0f;
+
+    Vector2 center = {centerX, centerY};
 
     for (int i = 0; i < sectorCount; i++)
     {
         DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
     }
 
-    DrawCircle(center.x, center.y, radius - 10, RAYWHITE);
+    // Ajuste para centrar correctamente la ruleta
+    DrawCircle(centerX, centerY, radius - 10, RAYWHITE);
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -521,15 +525,20 @@ void questionUpdate(char filename[])
             BeginDrawing();
             ClearBackground(RAYWHITE);
 
-            DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
+            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
+            float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
+            float x = (GetScreenWidth() - textWidth) / 2;
+            float y = GetScreenHeight() / 2 - 50; // Ajustar la posición vertical según sea necesario
+
+            DrawText(preguntas[currentQuestion].question, x, y, 20, originalColor);
 
             // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
-                float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
-                answerRect[j] = (Rectangle){190, 250 + j * 50, textWidth, 20};
+                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
+                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 50, textWidth, 20};
 
-                Vector2 mousePointLocal = {GetMouseX() - 190, GetMouseY() - answerRect[j].y};
+                Vector2 mousePointLocal = {GetMouseX() - answerRect[j].x, GetMouseY() - answerRect[j].y};
 
                 if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
                 {
@@ -566,10 +575,9 @@ void questionUpdate(char filename[])
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
             }
-
-            printf("%d\n", correctAnswers);
             EndDrawing();
         }
         fclose(fp);
     }
 }
+
