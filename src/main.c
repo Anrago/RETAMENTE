@@ -144,8 +144,14 @@ int main(void)
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
-    Image bgImage = LoadImage("assets/bg_menu.png");
-    Texture2D background = LoadTextureFromImage(bgImage);
+    Texture2D background[16];
+
+    for (int i = 1; i < 16; i++)
+    {
+        Image bgImage = LoadImage(TextFormat("assets/holaBackground/hola%d.png", i));
+        background[i-1] = LoadTextureFromImage(bgImage);
+    }
+
     Image bgGame = LoadImage("assets/bg_game.png");
     Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
@@ -167,6 +173,8 @@ int main(void)
 
     PlayMusicStream(menuMusic);
 
+    int hola = 0;
+
     while (!WindowShouldClose() && EXIT_FLAG)
     {
         switch (currentScene)
@@ -174,31 +182,44 @@ int main(void)
         case MENU:
             PlayMusic(menuMusic);
             MenuUpdate(menuButton, menuItemsCount, menuItems);
-            MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
+            MenuDraw(background[hola], tittleTexture, tittle, menuItemsCount, menuItems);
             break;
+
         case START_GAME:
             PlayMusic(menuMusic);
             RunCountdown(3, areYouReadyTexture, number3Texture, number2Texture, number1Texture, areYouReadybgTexture);
             StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
             break;
+
         case OPTIONS:
             PlayMusic(menuMusic);
             OptionsUpdate(menuMusic, menuButton, optionItemsCount, optionItems);
-            OptionsDraw(background, optionMenuTexture, optionMenu, optionItemsCount, optionItems);
+            OptionsDraw(background[hola], optionMenuTexture, optionMenu, optionItemsCount, optionItems);
             break;
+
         case CREDITS:
             currentScene = CREDITS;
             break;
+
         case EXIT:
             EXIT_FLAG = 0;
             break;
+
         default:
             break;
         }
+        hola++;
+
+        if (hola == 17)
+        {
+            hola = 0;
+        }
     }
 
-    UnloadTexture(background);
-    UnloadImage(bgImage);
+    for (int i = 0; i < 16; i++)
+    {
+        UnloadTexture(background[i]);
+    }
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
     UnloadTexture(tittleTexture);
