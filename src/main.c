@@ -550,7 +550,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
 
             DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 40, buttonColor);
             int totalScore = correctAnswers * 100;
-            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66)) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66) - 2) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
             DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, (GetScreenHeight() - 60) / 2 + 50, 60, RED);
 
             EndDrawing();
