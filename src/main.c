@@ -77,6 +77,13 @@ typedef struct
     Color color;
 } RouletteSector;
 
+typedef struct
+{
+    int countdown;
+    double timer;
+    bool transition;
+} CountdownState;
+
 const char *GetColorName(Color color)
 {
     if (color.r == 255 && color.g == 0 && color.b == 0)
@@ -144,6 +151,16 @@ int main(void)
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
+    Image areYouReadybg = LoadImage("assets/are_you_ready_bg.png");
+    Texture2D areYouReadybgTexture = LoadTextureFromImage(areYouReadybg);
+    Image areYouReady = LoadImage("assets/are_you_ready.png");
+    Texture2D areYouReadyTexture = LoadTextureFromImage(areYouReady);
+    Image number3 = LoadImage("assets/3.png");
+    Texture2D number3Texture = LoadTextureFromImage(number3);
+    Image number2 = LoadImage("assets/2.png");
+    Texture2D number2Texture = LoadTextureFromImage(number2);
+    Image number1 = LoadImage("assets/1.png");
+    Texture2D number1Texture = LoadTextureFromImage(number1);
     Image gameOver = LoadImage("assets/game_over.png");
     Texture2D gameOverTexture = LoadTextureFromImage(gameOver);
     //================================================================================================//
@@ -160,6 +177,8 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
             break;
         case START_GAME:
+            PlayMusic(menuMusic);
+            RunCountdown(3, areYouReadyTexture, number3Texture, number2Texture, number1Texture, areYouReadybgTexture);
             StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
             break;
         case OPTIONS:
@@ -188,6 +207,14 @@ int main(void)
     UnloadImage(bgGame);
     UnloadTexture(optionMenuTexture);
     UnloadImage(optionMenu);
+    UnloadTexture(areYouReadyTexture);
+    UnloadImage(areYouReady);
+    UnloadTexture(number3Texture);
+    UnloadImage(number3);
+    UnloadTexture(number2Texture);
+    UnloadImage(number2);
+    UnloadTexture(number1Texture);
+    UnloadImage(number1);
     UnloadTexture(gameOverTexture);
     UnloadImage(gameOver);
 
@@ -359,6 +386,50 @@ void questionUpdate(char filename[], Texture2D background)
             EndDrawing();
         }
         fclose(fp);
+    }
+}
+
+void RunCountdown(int seconds, Texture2D areYouReadyTexture, Texture2D number3Texture, Texture2D number2Texture, Texture2D number1Texture, Texture2D background)
+{
+    CountdownState countdownState = {seconds, GetTime(), false};
+
+    while (!countdownState.transition)
+    {
+        if (GetTime() - countdownState.timer >= 1.0)
+        {
+            countdownState.countdown--;
+            countdownState.timer = GetTime();
+
+            if (countdownState.countdown <= 0)
+            {
+                countdownState.transition = true;
+            }
+        }
+
+        BeginDrawing();
+
+        DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+
+        DrawTexture(areYouReadyTexture, GetScreenWidth() / 2 - areYouReadyTexture.width / 2, GetScreenHeight() / 2 - areYouReadyTexture.height - 200 / 2, WHITE);
+
+        if (countdownState.countdown == 3)
+        {
+            DrawTexture(number3Texture, GetScreenWidth() / 2 - number3Texture.width / 2, GetScreenHeight() / 2 - number3Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 2)
+        {
+            DrawTexture(number2Texture, GetScreenWidth() / 2 - number2Texture.width / 2, GetScreenHeight() / 2 - number2Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 1)
+        {
+            DrawTexture(number1Texture, GetScreenWidth() / 2 - number1Texture.width / 2, GetScreenHeight() / 2 - number1Texture.height / 2, WHITE);
+        }
+        else
+        {
+            DrawText("¡Preparado!", GetScreenWidth() / 2 - MeasureText("¡Preparado!", 20) / 2, GetScreenHeight() / 2 + 30, 20, GREEN);
+        }
+
+        EndDrawing();
     }
 }
 
