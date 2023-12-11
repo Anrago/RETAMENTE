@@ -218,7 +218,6 @@ void PlayMusic(Music music)
     Parameters: nothing
     Returns: nothing
  */
-
 void ChangeResolution()
 {
     currentResolutionIndex = (currentResolutionIndex + 1) % resolutionsCount;
@@ -511,8 +510,8 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
             DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
             Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
@@ -551,7 +550,8 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
 
             DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 40, buttonColor);
             int totalScore = correctAnswers * 100;
-            printf("Tu puntuacion total es: %d\n", totalScore);
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66)) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, (GetScreenHeight() - 60) / 2 + 50, 60, RED);
 
             EndDrawing();
 
