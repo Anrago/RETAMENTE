@@ -287,13 +287,15 @@ void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
     }
 }
 
-void questionUpdate(char filename[], Texture2D background)
+void questionUpdate(char filename[])
 {
     FILE *fp = fopen(filename, "r");
-
-    char answer;
+    Sound Correct = LoadSound("assets/CORRECTO.mp3");
+    Sound Incorrect = LoadSound("assets/INCORRECTO.mp3");
+    char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
     Question preguntas[MAX_QUESTIONS];
 
+    
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -304,29 +306,36 @@ void questionUpdate(char filename[], Texture2D background)
     }
     else
     {
-        Rectangle answerRect[4];
+        Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
-        while (currentQuestion < MAX_QUESTIONS)
+        while (currentQuestion < MAX_QUESTIONS && !WindowShouldClose())
         {
             answer = 'x';
             readFile(fp, preguntas);
 
             BeginDrawing();
             ClearBackground(RAYWHITE);
-            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-            DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
 
+            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
+            float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
+            float x = (GetScreenWidth() - textWidth) / 2;
+            float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
+
+            DrawText(preguntas[currentQuestion].question, x, y, 20, originalColor);
+
+            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
-                float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
-                answerRect[j] = (Rectangle){190, 250 + j * 50, textWidth, 20};
+                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
+                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 50, textWidth, 20};
 
-                Vector2 mousePointLocal = {GetMouseX() - 190, GetMouseY() - answerRect[j].y};
+                Vector2 mousePointLocal = {GetMouseX() - answerRect[j].x, GetMouseY() - answerRect[j].y};
 
                 if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
                 {
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
 
+                    // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                     {
                         if (j == 0)
@@ -347,7 +356,12 @@ void questionUpdate(char filename[], Texture2D background)
                         }
                         if (answer == preguntas[currentQuestion].correctAnswer)
                         {
+                            PlaySound(Correct);
                             correctAnswers++;
+                        }
+                        else
+                        {
+                            PlaySound(Incorrect);
                         }
                         currentQuestion++;
                     }
@@ -357,9 +371,6 @@ void questionUpdate(char filename[], Texture2D background)
                     DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
                 }
             }
-
-            printf("%d\n", correctAnswers);
-
             EndDrawing();
         }
         fclose(fp);
@@ -449,7 +460,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
     char *n;
     int num;
     int band = 0;
-    Sound rouletteSound = LoadSound("assets/Roulette_Sound.mp3");
+    Sound rouletteSound = LoadSound("assets/Roulette sound.mp3");
     bool shouldClose = false;
 
     int sectorCount = 8;
@@ -502,11 +513,11 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
                     currentQuestion = 1;
                     if (ColorToInt(stoppedColor) != ColorToInt(RED))
                     {
-                        questionUpdate("MATE.txt", background);
+                        questionUpdate("MATE.txt");
                     }
                     else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
                     {
-                        questionUpdate("ESPA.txt", background);
+                        questionUpdate("ESPA.txt");
                     }
                 }
             }
