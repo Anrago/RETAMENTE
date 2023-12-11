@@ -292,8 +292,6 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight, Font myFo
 
     DrawRectangleRec(barComplete, RED);
 
-    SetTextureFilter(myFont.texture, FILTER_POINT);
-
     DrawTextEx(myFont, TextFormat("Tiempo restante: %02ds", remainingSeconds), (Vector2){timerPosition.x, timerPosition.y}, 20, 2, BLACK);
 }
 
@@ -339,7 +337,7 @@ void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
     }
 }
 
-void questionUpdate(char filename[])
+void questionUpdate(char filename[], Font myFont)
 {
     FILE *fp = fopen(filename, "r");
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
@@ -372,7 +370,7 @@ void questionUpdate(char filename[])
             float x = (GetScreenWidth() - textWidth) / 2;
             float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
-            DrawText(preguntas[currentQuestion].question, x, y, 20, originalColor);
+            DrawTextEx(GetFontDefault(), preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
 
             // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
@@ -384,7 +382,7 @@ void questionUpdate(char filename[])
 
                 if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
                 {
-                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
+                    DrawTextEx(GetFontDefault(), preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, hoverColor);
 
                     // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -419,7 +417,7 @@ void questionUpdate(char filename[])
                 }
                 else
                 {
-                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, originalColor);
                 }
             }
             EndDrawing();
@@ -608,11 +606,11 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
                     currentQuestion = 1;
                     if (ColorToInt(stoppedColor) != ColorToInt(RED))
                     {
-                        questionUpdate("MATE.txt");
+                        questionUpdate("MATE.txt", myFont);
                     }
                     else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
                     {
-                        questionUpdate("ESPA.txt");
+                        questionUpdate("ESPA.txt", myFont);
                     }
                 }
             }
