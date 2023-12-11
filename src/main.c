@@ -77,6 +77,13 @@ typedef struct
     Color color;
 } RouletteSector;
 
+typedef struct
+{
+    int countdown;
+    double timer;
+    bool transition;
+} CountdownState;
+
 const char *GetColorName(Color color)
 {
     if (color.r == 255 && color.g == 0 && color.b == 0)
@@ -95,7 +102,7 @@ void ChangeResolution();
 bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver);
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver, Font myFont);
 void StartGameDraw(Texture2D background);
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
@@ -134,21 +141,39 @@ int main(void)
 
     // MAIN MENU & OPTIONS MENU //
     //================================================================================================//
+    Font myFont = LoadFont("assets/font.ttf");
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
-    Image bgImage = LoadImage("assets/bg_menu.png");
-    Texture2D background = LoadTextureFromImage(bgImage);
+    Texture2D background[16];
+
+    for (int i = 1; i < 16; i++)
+    {
+        Image bgImage = LoadImage(TextFormat("assets/holaBackground/hola%d.png", i));
+        background[i - 1] = LoadTextureFromImage(bgImage);
+    }
     Image bgGame = LoadImage("assets/bg_game.png");
     Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
+    Image areYouReadybg = LoadImage("assets/are_you_ready_bg.png");
+    Texture2D areYouReadybgTexture = LoadTextureFromImage(areYouReadybg);
+    Image areYouReady = LoadImage("assets/are_you_ready.png");
+    Texture2D areYouReadyTexture = LoadTextureFromImage(areYouReady);
+    Image number3 = LoadImage("assets/3.png");
+    Texture2D number3Texture = LoadTextureFromImage(number3);
+    Image number2 = LoadImage("assets/2.png");
+    Texture2D number2Texture = LoadTextureFromImage(number2);
+    Image number1 = LoadImage("assets/1.png");
+    Texture2D number1Texture = LoadTextureFromImage(number1);
     Image gameOver = LoadImage("assets/game_over.png");
     Texture2D gameOverTexture = LoadTextureFromImage(gameOver);
     //================================================================================================//
 
     PlayMusicStream(menuMusic);
+
+    int hola = 0;
 
     while (!WindowShouldClose() && EXIT_FLAG)
     {
@@ -157,29 +182,45 @@ int main(void)
         case MENU:
             PlayMusic(menuMusic);
             MenuUpdate(menuButton, menuItemsCount, menuItems);
-            MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
+            MenuDraw(background[hola], tittleTexture, tittle, menuItemsCount, menuItems);
             break;
+
         case START_GAME:
-            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
+            PlayMusic(menuMusic);
+            RunCountdown(3, areYouReadyTexture, number3Texture, number2Texture, number1Texture, areYouReadybgTexture);
+            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture, myFont);
             break;
+
         case OPTIONS:
             PlayMusic(menuMusic);
             OptionsUpdate(menuMusic, menuButton, optionItemsCount, optionItems);
-            OptionsDraw(background, optionMenuTexture, optionMenu, optionItemsCount, optionItems);
+            OptionsDraw(background[hola], optionMenuTexture, optionMenu, optionItemsCount, optionItems);
             break;
+
         case CREDITS:
-            currentScene = CREDITS;
+            CreditsUpdate();
+            CreditsDraw();
             break;
+
         case EXIT:
             EXIT_FLAG = 0;
             break;
+
         default:
             break;
         }
+        hola++;
+
+        if (hola == 17)
+        {
+            hola = 0;
+        }
     }
 
-    UnloadTexture(background);
-    UnloadImage(bgImage);
+    for (int i = 0; i < 16; i++)
+    {
+        UnloadTexture(background[i]);
+    }
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
     UnloadTexture(tittleTexture);
@@ -188,8 +229,19 @@ int main(void)
     UnloadImage(bgGame);
     UnloadTexture(optionMenuTexture);
     UnloadImage(optionMenu);
+    UnloadTexture(areYouReadyTexture);
+    UnloadImage(areYouReady);
+    UnloadTexture(number3Texture);
+    UnloadImage(number3);
+    UnloadTexture(number2Texture);
+    UnloadImage(number2);
+    UnloadTexture(number1Texture);
+    UnloadImage(number1);
     UnloadTexture(gameOverTexture);
     UnloadImage(gameOver);
+    UnloadTexture(areYouReadybgTexture);
+    UnloadImage(areYouReadybg);
+    UnloadFont(myFont);
 
     CloseAudioDevice();
     CloseWindow();
@@ -224,7 +276,7 @@ void ChangeResolution()
     SetWindowSize(screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]);
 }
 
-void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
+void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight, Font myFont)
 {
     int barHeight = 30;
     int padding = 10;
@@ -239,6 +291,7 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
     Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
 
     DrawRectangleRec(barComplete, RED);
+    DrawTextEx(myFont, TextFormat("%02ds", remainingSeconds), timerPosition, 20, 0, BLACK);
     DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
 }
 
@@ -252,16 +305,13 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     float radius = 200.0f;
     float centerX = GetScreenWidth() / 2.0f;
     float centerY = GetScreenHeight() / 2.0f;
-    
+
     Vector2 center = {centerX, centerY};
 
     for (int i = 0; i < sectorCount; i++)
     {
         DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
     }
-
-    // Ajuste para centrar correctamente la ruleta
-    
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -295,7 +345,6 @@ void questionUpdate(char filename[])
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
     Question preguntas[MAX_QUESTIONS];
 
-    
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -377,6 +426,50 @@ void questionUpdate(char filename[])
     }
 }
 
+void RunCountdown(int seconds, Texture2D areYouReadyTexture, Texture2D number3Texture, Texture2D number2Texture, Texture2D number1Texture, Texture2D background)
+{
+    CountdownState countdownState = {seconds, GetTime(), false};
+
+    while (!countdownState.transition)
+    {
+        if (GetTime() - countdownState.timer >= 1.0)
+        {
+            countdownState.countdown--;
+            countdownState.timer = GetTime();
+
+            if (countdownState.countdown <= 0)
+            {
+                countdownState.transition = true;
+            }
+        }
+
+        BeginDrawing();
+
+        DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+
+        DrawTexture(areYouReadyTexture, GetScreenWidth() / 2 - areYouReadyTexture.width / 2, GetScreenHeight() / 2 - areYouReadyTexture.height - 200 / 2, WHITE);
+
+        if (countdownState.countdown == 3)
+        {
+            DrawTexture(number3Texture, GetScreenWidth() / 2 - number3Texture.width / 2, GetScreenHeight() / 2 - number3Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 2)
+        {
+            DrawTexture(number2Texture, GetScreenWidth() / 2 - number2Texture.width / 2, GetScreenHeight() / 2 - number2Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 1)
+        {
+            DrawTexture(number1Texture, GetScreenWidth() / 2 - number1Texture.width / 2, GetScreenHeight() / 2 - number1Texture.height / 2, WHITE);
+        }
+        else
+        {
+            DrawText("¡Preparado!", GetScreenWidth() / 2 - MeasureText("¡Preparado!", 20) / 2, GetScreenHeight() / 2 + 30, 20, GREEN);
+        }
+
+        EndDrawing();
+    }
+}
+
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -449,7 +542,7 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     EndDrawing();
 }
 
-void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver)
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver, Font myFont)
 {
     Timer timer;
     timer.startTime = GetTime();
@@ -460,7 +553,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
     char *n;
     int num;
     int band = 0;
-    Sound rouletteSound = LoadSound("assets/Roulette sound.mp3");
+    Sound rouletteSound = LoadSound("assets/Roulette_Sound.mp3");
     bool shouldClose = false;
 
     int sectorCount = 8;
@@ -526,7 +619,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawRoulette(sectors, sectorCount, rotation);
-            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight(), myFont);
 
             Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
@@ -565,7 +658,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
 
             DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 40, buttonColor);
             int totalScore = correctAnswers * 100;
-            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66)) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66) - 2) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
             DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, (GetScreenHeight() - 60) / 2 + 50, 60, RED);
 
             EndDrawing();
@@ -675,4 +768,7 @@ void CreditsUpdate()
 
 void CreditsDraw()
 {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
 }
