@@ -18,6 +18,7 @@ int currentQuestion = 1;
 int correctAnswers = 0;
 int finalScore = 0;
 int remainingSeconds;
+Font myFont;
 
 typedef struct question
 {
@@ -102,10 +103,10 @@ void ChangeResolution();
 bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver, Font myFont);
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver);
 void StartGameDraw(Texture2D background);
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
-void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t optionItemsCount, OptionItem optionItems[]);
 void CreditsUpdate();
 void CreditsDraw();
 //================================================================================================//
@@ -122,18 +123,18 @@ int main(void)
     //================================================================================================//
     MenuItem menuItems[] = {
         {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, "Iniciar", START_GAME},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 10, 200, 40}, "Opciones", OPTIONS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 40, 200, 40}, "Créditos", CREDITS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 90, 200, 40}, "Salir", EXIT}};
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 20, 200, 40}, "Opciones", OPTIONS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 100, 200, 40}, "Créditos", CREDITS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 180, 200, 40}, "Salir", EXIT}};
     //================================================================================================//
 
     // OPTION ITEMS //
     //================================================================================================//
     OptionItem optionItems[] = {
         {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, "Silenciar Musica", MUTE_MUSIC},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 10, 200, 40}, "Silenciar efectos de sonido", MUTE_SOUNDS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 40, 200, 40}, "Cambiar resolucion", CHANGE_RESOLUTION},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 90, 200, 40}, "Volver al menu", BACK_TO_MENU}};
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2, 200, 40}, "Silenciar efectos de sonido", MUTE_SOUNDS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 60, 200, 40}, "Cambiar resolucion", CHANGE_RESOLUTION},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 120, 200, 40}, "Volver al menu", BACK_TO_MENU}};
     //================================================================================================//
 
     size_t menuItemsCount = sizeof(menuItems) / sizeof(menuItems[0]);
@@ -141,7 +142,7 @@ int main(void)
 
     // MAIN MENU & OPTIONS MENU //
     //================================================================================================//
-    Font myFont = LoadFont("assets/font.ttf");
+    myFont = LoadFont("assets/font.ttf");
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
@@ -188,7 +189,7 @@ int main(void)
         case START_GAME:
             PlayMusic(menuMusic);
             RunCountdown(3, areYouReadyTexture, number3Texture, number2Texture, number1Texture, areYouReadybgTexture);
-            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture, myFont);
+            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
             break;
 
         case OPTIONS:
@@ -276,7 +277,7 @@ void ChangeResolution()
     SetWindowSize(screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]);
 }
 
-void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight, Font myFont)
+void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
 {
     int barHeight = 30;
     int padding = 10;
@@ -337,7 +338,7 @@ void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
     }
 }
 
-void questionUpdate(char filename[], Font myFont)
+void questionUpdate(char filename[], Texture2D background)
 {
     FILE *fp = fopen(filename, "r");
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
@@ -364,15 +365,14 @@ void questionUpdate(char filename[], Font myFont)
 
             BeginDrawing();
             ClearBackground(RAYWHITE);
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
 
-            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
             float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
             float x = (GetScreenWidth() - textWidth) / 2;
             float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
-            DrawTextEx(GetFontDefault(), preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
+            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
 
-            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
                 textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
@@ -382,7 +382,7 @@ void questionUpdate(char filename[], Font myFont)
 
                 if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
                 {
-                    DrawTextEx(GetFontDefault(), preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, hoverColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 20, 1, hoverColor);
 
                     // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -519,6 +519,7 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     BeginDrawing();
     DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
     DrawTexture(tittleTexture, screenWidths[currentResolutionIndex] / 2 - tittle.width / 2, 60, WHITE);
+
     for (int i = 0; i < menuItemsCount; i++)
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
@@ -536,17 +537,18 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
 
         float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
 
-        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
+        // Utiliza DrawTextEx para tener más control sobre la posición y alineación del texto
+        DrawTextEx(myFont, menuItems[i].text, (Vector2){x, y}, 40, 1, textColor);
     }
 
     EndDrawing();
 }
 
-void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver, Font myFont)
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver)
 {
     Timer timer;
     timer.startTime = GetTime();
-    timer.countdown = 20;
+    timer.countdown = 15;
 
     GameState gameState = GAME;
 
@@ -606,11 +608,11 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
                     currentQuestion = 1;
                     if (ColorToInt(stoppedColor) != ColorToInt(RED))
                     {
-                        questionUpdate("MATE.txt", myFont);
+                        questionUpdate("MATE.txt", background);
                     }
                     else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
                     {
-                        questionUpdate("ESPA.txt", myFont);
+                        questionUpdate("ESPA.txt", background);
                     }
                 }
             }
@@ -619,7 +621,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawRoulette(sectors, sectorCount, rotation);
-            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight(), myFont);
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
             Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
@@ -634,12 +636,13 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             break;
 
         case GAME_OVER:
+        {
             Rectangle buttonRect = {GetScreenWidth() / 2 - 150, GetScreenHeight() / 2 + 250, 310, 50};
             Color buttonColor = WHITE;
 
             BeginDrawing();
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-            DrawTexture(gameOver, GetScreenHeight() / 2, 50, WHITE);
+            DrawTexture(gameOver, GetScreenWidth() / 2 - gameOver.width / 2, 50, WHITE);
 
             if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
             {
@@ -649,21 +652,31 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
                 PlaySound(mySound);
-
                 shouldClose = true;
                 currentScene = MENU;
                 correctAnswers = 0;
                 currentQuestion = 1;
             }
 
-            DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 40, buttonColor);
+            // Centra el texto y el botón en la pantalla
+            float buttonTextWidth = MeasureText("Volver al Menú", 40);
+            float buttonX = GetScreenWidth() / 2 - buttonTextWidth / 2;
+            float buttonY = GetScreenHeight() / 2 + 250 + (buttonRect.height - 40) / 2;
+
+            DrawTextEx(myFont, "Volver al Menú", (Vector2){buttonX, buttonY}, 40, 1, buttonColor);
+
             int totalScore = correctAnswers * 100;
-            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66) - 2) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
-            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, (GetScreenHeight() - 60) / 2 + 50, 60, RED);
+            float scoreTextWidth = MeasureText(TextFormat("%i", totalScore), 65);
+            float scoreX = (GetScreenWidth() - scoreTextWidth) / 2;
+            float scoreY = (GetScreenHeight() - 60) / 2 + 50;
+
+            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){scoreX, scoreY}, 65, 1, BLACK);
+            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY}, 60, 1, RED);
 
             EndDrawing();
 
             break;
+        }
         }
     }
 }
@@ -688,11 +701,7 @@ void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuIt
                 textWidth,
                 menuItems[i].bounds.height};
 
-            Vector2 mousePointLocal = {
-                GetMouseX() - centeredBounds.x,
-                GetMouseY() - centeredBounds.y};
-
-            if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+            if (CheckCollisionPointRec(mousePoint, centeredBounds))
             {
                 PlaySound(mySound);
                 switch (menuItems[i].action)
@@ -734,29 +743,30 @@ void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuIt
     }
 }
 
-void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[])
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t optionItemsCount, OptionItem optionItems[])
 {
     BeginDrawing();
     DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
     DrawTexture(optionMenuTexture, screenWidths[currentResolutionIndex] / 2 - optionMenu.width / 2, 60, WHITE);
-    for (int i = 0; i < menuItemsCount; i++)
+
+    for (int i = 0; i < optionItemsCount; i++)
     {
-        float textWidth = MeasureText(menuItems[i].text, 40);
+        float textWidth = MeasureText(optionItems[i].text, 40);
 
         float x = (GetScreenWidth() - textWidth) / 2;
 
         Color textColor = BLACK;
 
-        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
+        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - optionItems[i].bounds.y};
 
         if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
         {
             textColor = YELLOW;
         }
 
-        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
+        float y = optionItems[i].bounds.y + (optionItems[i].bounds.height - 40) / 2;
 
-        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
+        DrawTextEx(myFont, optionItems[i].text, (Vector2){x, y}, 40, 1, textColor);
     }
 
     EndDrawing();
