@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX_QUESTIONS 10
+#define MAX_QUESTIONS 100
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -14,6 +14,7 @@ const int MAX_FPS = 60;
 float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
 
+long filePosition = 0;
 int currentQuestion = 1;
 int correctAnswers = 0;
 typedef struct question
@@ -334,7 +335,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
                 rotationSpeed = 0.0f;
                 int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
                 Color stoppedColor = sectors[sectorIndex].color;
-                currentQuestion = 1;
+
                 if (ColorToInt(stoppedColor) != ColorToInt(RED))
                 {
                     questionUpdate("MATE.txt");
@@ -353,7 +354,7 @@ void StartGameUpdate(int screenWidth, int screenHeight)
         DrawRoulette(sectors, sectorCount, rotation);
 
         // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
-        Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight()/ 2.0f - 199.0f};
+        Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
         DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
 
         EndDrawing();
@@ -463,7 +464,7 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     float radius = 200.0f;
     float centerX = GetScreenWidth() / 2.0f;
     float centerY = GetScreenHeight() / 2.0f;
-    
+
     Vector2 center = {centerX, centerY};
 
     for (int i = 0; i < sectorCount; i++)
@@ -472,7 +473,6 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     }
 
     // Ajuste para centrar correctamente la ruleta
-    
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -482,18 +482,24 @@ void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, 
 
 void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
 {
-    int j = 0;
-    static int ant;
-    if (currentQuestion != ant)
+    static int ant = -1;
+
+    if (currentQuestion != ant && currentQuestion < MAX_QUESTIONS)
     {
-        fgets(preguntas[currentQuestion].question, 256, fp);
-        while (j < 4)
+        fseek(fp, 0, SEEK_SET); // Coloca el cursor al principio del archivo
+
+        // Avanza hasta la posición de la pregunta actual
+        for (int i = 0; i <= currentQuestion; ++i)
         {
-            fgets(preguntas[currentQuestion].answer[j], 256, fp);
-            j++;
+            fgets(preguntas[i].question, 256, fp);
+            for (int j = 0; j < 4; j++)
+            {
+                fgets(preguntas[i].answer[j], 256, fp);
+            }
+            fscanf(fp, "%c", &preguntas[i].correctAnswer);
+            fgetc(fp);
         }
-        fscanf(fp, "%c", &preguntas[currentQuestion].correctAnswer);
-        fgetc(fp);
+
         ant = currentQuestion;
     }
 }
@@ -503,10 +509,12 @@ void questionUpdate(char filename[])
     FILE *fp = fopen(filename, "r");
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
     Sound Incorrect = LoadSound("assets/INCORRECTO.mp3");
+    static long int filePos = 0;
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
+    fseek(fp, filePos, SEEK_SET);
     Tquestion preguntas[MAX_QUESTIONS];
+    int i = 0;
 
-    
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -519,7 +527,7 @@ void questionUpdate(char filename[])
     {
         Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
-        while (currentQuestion < MAX_QUESTIONS && !WindowShouldClose())
+        while (i < 5 && !WindowShouldClose())
         {
             answer = 'x';
             readFile(fp, preguntas);
@@ -574,6 +582,8 @@ void questionUpdate(char filename[])
                         {
                             PlaySound(Incorrect);
                         }
+                        filePos = ftell(fp);
+                        i++; // Mueve i antes del incremento de currentQuestion
                         currentQuestion++;
                     }
                 }
@@ -587,4 +597,3 @@ void questionUpdate(char filename[])
         fclose(fp);
     }
 }
-
