@@ -1,5 +1,10 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_QUESTIONS 10
 
 const int resolutionsCount = 3;
 const int screenWidths[] = {1280, 1600, 1920};
@@ -9,7 +14,17 @@ int currentResolutionIndex = 0;
 const int MAX_FPS = 60;
 float timePlayed = 0.0f;
 int EXIT_FLAG = 1;
+int currentQuestion = 1;
+int correctAnswers = 0;
+int finalScore = 0;
+int remainingSeconds;
 
+typedef struct question
+{
+    char question[100];
+    char answer[4][100];
+    char correctAnswer;
+} Question;
 typedef enum
 {
     MENU,
@@ -27,6 +42,13 @@ typedef enum
     BACK_TO_MENU
 } OptionAction;
 
+typedef enum
+{
+    MENU2,
+    GAME,
+    GAME_OVER
+} GameState;
+
 GameScene currentScene = MENU;
 typedef struct
 {
@@ -42,14 +64,39 @@ typedef struct
     OptionAction action;
 } OptionItem;
 
+typedef struct
+{
+    int startTime;
+    int countdown;
+} Timer;
+
+typedef struct
+{
+    float startAngle;
+    float endAngle;
+    Color color;
+} RouletteSector;
+
+const char *GetColorName(Color color)
+{
+    if (color.r == 255 && color.g == 0 && color.b == 0)
+        return "RED";
+    else if (color.r == 0 && color.g == 0 && color.b == 255)
+        return "BLUE";
+    // Agrega más condiciones según sea necesario para otros colores
+    else
+        return "UNKNOWN COLOR";
+}
+
 // PROTOTYPES //
 //================================================================================================//
 void PlayMusic(Music music);
 void ChangeResolution();
+bool CheckAngleInSector(float angle, RouletteSector sector);
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate();
-void StartGameDraw();
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver);
+void StartGameDraw(Texture2D background);
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
 void CreditsUpdate();
@@ -92,9 +139,13 @@ int main(void)
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
     Image bgImage = LoadImage("assets/bg_menu.png");
     Texture2D background = LoadTextureFromImage(bgImage);
+    Image bgGame = LoadImage("assets/bg_game.png");
+    Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
+    Image gameOver = LoadImage("assets/game_over.png");
+    Texture2D gameOverTexture = LoadTextureFromImage(gameOver);
     //================================================================================================//
 
     PlayMusicStream(menuMusic);
@@ -109,8 +160,7 @@ int main(void)
             MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
             break;
         case START_GAME:
-            StartGameUpdate();
-            StartGameDraw();
+            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
             break;
         case OPTIONS:
             PlayMusic(menuMusic);
@@ -132,6 +182,14 @@ int main(void)
     UnloadImage(bgImage);
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
+    UnloadTexture(tittleTexture);
+    UnloadImage(tittle);
+    UnloadTexture(backgroundGame);
+    UnloadImage(bgGame);
+    UnloadTexture(optionMenuTexture);
+    UnloadImage(optionMenu);
+    UnloadTexture(gameOverTexture);
+    UnloadImage(gameOver);
 
     CloseAudioDevice();
     CloseWindow();
@@ -166,6 +224,144 @@ void ChangeResolution()
     SetWindowSize(screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]);
 }
 
+void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
+{
+    int barHeight = 30;
+    int padding = 10;
+
+    int currentTime = GetTime();
+    int elapsedSeconds = currentTime - timer.startTime;
+    remainingSeconds = timer.countdown - elapsedSeconds;
+
+    float barWidth = (float)elapsedSeconds / timer.countdown * screenWidth;
+    Rectangle barComplete = {0, 0, barWidth, barHeight};
+
+    Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
+
+    DrawRectangleRec(barComplete, RED);
+    DrawText(TextFormat("Tiempo restante: %02ds", remainingSeconds), timerPosition.x, timerPosition.y, 20, BLACK);
+}
+
+bool CheckAngleInSector(float angle, RouletteSector sector)
+{
+    return angle >= sector.startAngle && angle < sector.endAngle;
+}
+
+void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation, int screenWidth, int screenHeight)
+{
+    float radius = 200.0f;
+    Vector2 center = {screenWidth / 2.0f, screenHeight / 2.0f};
+
+    for (int i = 0; i < sectorCount; i++)
+    {
+        DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
+    }
+
+    DrawCircle(center.x, center.y, radius - 10, RAYWHITE);
+}
+
+void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
+{
+    DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
+}
+
+void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
+{
+    int j = 0;
+    static int ant;
+    if (currentQuestion != ant)
+    {
+        fgets(preguntas[currentQuestion].question, 256, fp);
+        while (j < 4)
+        {
+            fgets(preguntas[currentQuestion].answer[j], 256, fp);
+            j++;
+        }
+        fscanf(fp, "%c", &preguntas[currentQuestion].correctAnswer);
+        fgetc(fp);
+        ant = currentQuestion;
+    }
+}
+
+void questionUpdate(char filename[], Texture2D background)
+{
+    FILE *fp = fopen(filename, "r");
+
+    char answer;
+    Question preguntas[MAX_QUESTIONS];
+
+    Color originalColor = BLACK;
+    Color hoverColor = YELLOW;
+
+    if (fp == NULL)
+    {
+        printf("Error al abrir el archivo");
+        exit(1);
+    }
+    else
+    {
+        Rectangle answerRect[4];
+
+        while (currentQuestion < MAX_QUESTIONS)
+        {
+            answer = 'x';
+            readFile(fp, preguntas);
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawText(preguntas[currentQuestion].question, 190, 200, 20, originalColor);
+
+            for (int j = 0; j < 4; j++)
+            {
+                float textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
+                answerRect[j] = (Rectangle){190, 250 + j * 50, textWidth, 20};
+
+                Vector2 mousePointLocal = {GetMouseX() - 190, GetMouseY() - answerRect[j].y};
+
+                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
+
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                    {
+                        if (j == 0)
+                        {
+                            answer = 'a';
+                        }
+                        else if (j == 1)
+                        {
+                            answer = 'b';
+                        }
+                        else if (j == 2)
+                        {
+                            answer = 'c';
+                        }
+                        else if (j == 3)
+                        {
+                            answer = 'd';
+                        }
+                        if (answer == preguntas[currentQuestion].correctAnswer)
+                        {
+                            correctAnswers++;
+                        }
+                        currentQuestion++;
+                    }
+                }
+                else
+                {
+                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
+                }
+            }
+
+            printf("%d\n", correctAnswers);
+
+            EndDrawing();
+        }
+        fclose(fp);
+    }
+}
+
 void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -174,7 +370,20 @@ void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
 
         for (int i = 0; i < menuItemsCount; i++)
         {
-            if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
+            float textWidth = MeasureText(menuItems[i].text, 40);
+            float x = (GetScreenWidth() - textWidth) / 2;
+
+            Rectangle centeredBounds = {
+                x,
+                menuItems[i].bounds.y,
+                textWidth,
+                menuItems[i].bounds.height};
+
+            Vector2 mousePointLocal = {
+                GetMouseX() - centeredBounds.x,
+                GetMouseY() - centeredBounds.y};
+
+            if (CheckCollisionPointRec(mousePoint, centeredBounds))
             {
                 PlaySound(mySound);
                 switch (menuItems[i].action)
@@ -206,28 +415,149 @@ void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
 
-        float x = menuItems[i].bounds.x + (menuItems[i].bounds.width - textWidth) / 2;
+        float x = (GetScreenWidth() - textWidth) / 2;
 
         Color textColor = BLACK;
 
-        if (CheckCollisionPointRec(GetMousePosition(), menuItems[i].bounds))
+        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
+
+        if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
         {
             textColor = YELLOW;
         }
-        DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
+
+        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
+
+        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
     }
+
     EndDrawing();
 }
 
-void StartGameUpdate()
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver)
 {
-}
+    Timer timer;
+    timer.startTime = GetTime();
+    timer.countdown = 20;
 
-void StartGameDraw()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
+    GameState gameState = GAME;
+
+    char *n;
+    int num;
+    int band = 0;
+    Sound rouletteSound = LoadSound("assets/Roulette_Sound.mp3");
+    bool shouldClose = false;
+
+    int sectorCount = 8;
+    RouletteSector sectors[8] = {
+        {0, 45, RED},
+        {45, 90, BLUE},
+        {90, 135, RED},
+        {135, 180, BLUE},
+        {180, 225, RED},
+        {225, 270, BLUE},
+        {270, 315, RED},
+        {315, 360, BLUE}};
+
+    float rotationSpeed = 0.0f;
+    float rotation = 0.0f;
+    bool spinning = false;
+
+    RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
+    BeginTextureMode(arrowTexture);
+    ClearBackground(BLANK);
+
+    DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
+
+    EndTextureMode();
+
+    while (!shouldClose)
+    {
+        switch (gameState)
+        {
+        case GAME:
+            if (IsKeyPressed(KEY_SPACE) && !spinning)
+            {
+                spinning = true;
+                rotationSpeed = 20.0f + GetRandomValue(-5, 5);
+
+                PlaySound(rouletteSound);
+            }
+
+            if (spinning)
+            {
+                rotation += rotationSpeed;
+                rotationSpeed *= 0.99f;
+
+                if (rotationSpeed < 0.1f)
+                {
+                    spinning = false;
+                    rotationSpeed = 0.0f;
+                    int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
+                    Color stoppedColor = sectors[sectorIndex].color;
+                    currentQuestion = 1;
+                    if (ColorToInt(stoppedColor) != ColorToInt(RED))
+                    {
+                        questionUpdate("MATE.txt", background);
+                    }
+                    else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
+                    {
+                        questionUpdate("ESPA.txt", background);
+                    }
+                }
+            }
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
+
+            Vector2 arrowPosition = {screenWidth / 1.958f - arrowTexture.texture.width / 2.0, screenHeight / 2.0f - 199.0f};
+            DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+
+            EndDrawing();
+
+            if (GetTime() - timer.startTime >= timer.countdown)
+            {
+                gameState = GAME_OVER;
+            }
+
+            break;
+
+        case GAME_OVER:
+            Rectangle buttonRect = {GetScreenWidth() / 2 - 150, GetScreenHeight() / 2 + 250, 310, 50};
+            Color buttonColor = WHITE;
+
+            BeginDrawing();
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawTexture(gameOver, GetScreenHeight() / 2, 50, WHITE);
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
+            {
+                buttonColor = YELLOW;
+            }
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                PlaySound(mySound);
+
+                shouldClose = true;
+                currentScene = MENU;
+                correctAnswers = 0;
+                currentQuestion = 1;
+            }
+
+            DrawText("Volver al Menú", buttonRect.x, buttonRect.y, 40, buttonColor);
+            int totalScore = correctAnswers * 100;
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 66)) / 2, (GetScreenHeight() - 60) / 2 + 50, 66, BLACK);
+            DrawText(TextFormat("%i", totalScore), (GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, (GetScreenHeight() - 60) / 2 + 50, 60, RED);
+
+            EndDrawing();
+
+            break;
+        }
+    }
 }
 
 void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
@@ -241,6 +571,19 @@ void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuIt
 
         for (int i = 0; i < menuItemsCount; i++)
         {
+            float textWidth = MeasureText(menuItems[i].text, 40);
+            float x = (GetScreenWidth() - textWidth) / 2;
+
+            Rectangle centeredBounds = {
+                x,
+                menuItems[i].bounds.y,
+                textWidth,
+                menuItems[i].bounds.height};
+
+            Vector2 mousePointLocal = {
+                GetMouseX() - centeredBounds.x,
+                GetMouseY() - centeredBounds.y};
+
             if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
             {
                 PlaySound(mySound);
@@ -292,16 +635,20 @@ void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image option
     {
         float textWidth = MeasureText(menuItems[i].text, 40);
 
-        float x = menuItems[i].bounds.x + (menuItems[i].bounds.width - textWidth) / 2;
+        float x = (GetScreenWidth() - textWidth) / 2;
 
         Color textColor = BLACK;
 
-        if (CheckCollisionPointRec(GetMousePosition(), menuItems[i].bounds))
+        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
+
+        if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
         {
             textColor = YELLOW;
         }
 
-        DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
+        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
+
+        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
     }
 
     EndDrawing();
