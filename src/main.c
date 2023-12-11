@@ -149,7 +149,7 @@ int main(void)
     for (int i = 1; i < 16; i++)
     {
         Image bgImage = LoadImage(TextFormat("assets/holaBackground/hola%d.png", i));
-        background[i-1] = LoadTextureFromImage(bgImage);
+        background[i - 1] = LoadTextureFromImage(bgImage);
     }
 
     Image bgGame = LoadImage("assets/bg_game.png");
@@ -301,15 +301,13 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     float radius = 200.0f;
     float centerX = GetScreenWidth() / 2.0f;
     float centerY = GetScreenHeight() / 2.0f;
-    
+
     Vector2 center = {centerX, centerY};
 
     for (int i = 0; i < sectorCount; i++)
     {
         DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
     }
-
-    
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -609,7 +607,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             DrawRoulette(sectors, sectorCount, rotation);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
-            Vector2 arrowPosition = {GetscreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetscreenHeight() / 2.0f - 199.0f};
+            Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
 
             EndDrawing();
