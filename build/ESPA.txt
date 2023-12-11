@@ -58,7 +58,60 @@ b) Che
 c) Chi
 d) Cho
 b
-
+¿Cuánto es la suma de 5 + 7?
+a) 10
+b) 12
+c) 14
+d) 15
+b
+¿Cuántos lados tiene un hexágono?
+a) 5
+b) 6
+c) 7
+d) 8
+b
+¿Cuál es el resultado de multiplicar 9 por 6?
+a) 45
+b) 54
+c) 63
+d) 72
+b
+¿Cuál es el cuadrado de 8?
+a) 12
+b) 14
+c) 16
+d) 64
+d
+¿Cuánto es la resta de 15 menos 9?
+a) 4
+b) 6
+c) 8
+d) 10
+b
+¿Cuántos grados tiene un triángulo rectángulo?
+a) 45
+b) 60
+c) 90
+d) 180
+d
+¿Cuánto es la raíz cuadrada de 81?
+a) 6
+b) 8
+c) 9
+d) 10
+c
+Si un tren viaja a una velocidad de 60 km/h, ¿cuánto tiempo tomará recorrer 120 km?
+a) 1 hora
+b) 2 horas
+c) 3 horas
+d) 4 horas
+b
+¿Cuál es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
 
 
 
