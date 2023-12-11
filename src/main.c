@@ -605,7 +605,7 @@ void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-            DrawRoulette(sectors, sectorCount, rotation, screenWidth, screenHeight);
+            DrawRoulette(sectors, sectorCount, rotation);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
             Vector2 arrowPosition = {GetscreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetscreenHeight() / 2.0f - 199.0f};
