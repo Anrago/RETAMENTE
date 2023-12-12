@@ -200,6 +200,7 @@ int main(void)
         switch (currentScene)
         {
         case MENU:
+            currentQuestion = 1;
             PlayMusic(menuMusic);
             MenuUpdate(menuButton, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
             MenuDraw(background[hola], tittleTexture, tittle, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
