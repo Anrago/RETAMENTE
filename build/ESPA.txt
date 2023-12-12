@@ -1,4 +1,4 @@
-¿Cuál de las siguientes letras no es una vocal?
+¿Cuál de las siguientes letras es una vocal?
 a) B
 b) L
 c) U
@@ -58,6 +58,91 @@ b) Che
 c) Chi
 d) Cho
 b
+¿Cual de las siguientes palabras es un sinonimo de "Mejorar"?
+a) Simplificar
+b) Sintetizar
+c) Planificar
+d) Perfeccionar
+d
+¿Que es un palindromo?
+a) Una frase que significa lo mismo que otra
+b) Una frase que se lee de la misma manera al derecho y al reves
+c) Una frase  que significa lo opuesto que otra
+d) Ninguna de las anteriores
+b
+Las palabras que terminan en "ar,er,ir" son ejemplos de:
+a) Verbos infinitivos
+b) Verbos regulares
+c) Verbos irregulares
+d) Verbos auxiliares
+a
+¿Cual de las siguientes palabras esta escrita correctamente?
+a) Allmuerzo
+b) Almursso
+c) Almuerxo
+d) Almuerzo
+d
+¿Cuantas silabas tiene la palabra "escuela"?
+a) 2
+b) 3
+c) 4
+d) 5
+b
+¿Cual es la letra que sigue despues de la "R" en el abecedario?
+a) S
+b) T
+c) U
+d) Q
+a
+¿Cual es el plural correcto de la palabra "pajaro"?
+a) Pajaros
+b) Pajaras
+c) Pajaris
+d) Pajares
+a
+¿Que palabra es un antonimo de "cerrar"?
+a) Cercar
+b) Crear
+c) Abrir
+d) Bloquear
+c
+¿Cual de las siguientes palabras esta escrita en singular?
+a) Flores
+b) Arboles
+c) Río
+d) Montañas
+c
+¿Cual es la letra que sigue despues de la "G" en el abecedario?
+a) H
+b) I
+c) F
+d) J
+a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
