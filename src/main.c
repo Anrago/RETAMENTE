@@ -376,7 +376,7 @@ void questionUpdate(char filename[], Texture2D background)
     Question preguntas[MAX_QUESTIONS];
     int i = 0;
     timer.startTime = GetTime();
-    timer.countdown = 15;
+    timer.countdown = 2;
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -627,8 +627,10 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
 
     char *n;
     int num;
-    int band = 0;
+    int band = 1;
+    int band2 = 1;
     Sound rouletteSound = LoadSound("assets/Roulette_Sound.mp3");
+    Sound Victory = LoadSound("assets/VICTORIAA.mp3");
     bool shouldClose = false;
     GameMusic = LoadMusicStream("MUSICGAME.mp3");
     int sectorCount = 8;
@@ -709,6 +711,18 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
 
         case GAME_OVER:
         {
+
+            if (band == 1)
+            {
+                StopMusicStream(GameMusic);
+                band = 0;
+            }
+            if (band2 == 1)
+            {
+                PlaySound(Victory);
+                band2 = 0;
+            }
+
             Rectangle buttonRect = {GetScreenWidth() / 2 - 150, GetScreenHeight() / 2 + 200, 310, 50};
             Color buttonColor = WHITE;
 
@@ -717,7 +731,6 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             float textureHeight = (float)backToMenu.height;
             float x = (GetScreenWidth() - textureWidth) / 2;
             float y = screenHeights[currentResolutionIndex] / 2 + 159;
-
             textureWidth = (float)backToMenu.width;
             textureHeight = (float)backToMenu.height;
             Rectangle exitBounds = {x, y, textureWidth, textureHeight};
@@ -752,11 +765,11 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             {
                 DrawTexture(backToMenu, x, y, WHITE);
             }
-
+            
             int totalScore = correctAnswers * 100;
-            int HighScore;
-            FILE *Score = fopen("HighScore.txt", "r");
-            fscanf(Score, "%d", &HighScore);
+            int HighScore=0;
+            FILE *Score = fopen("HighScore.dll", "rb");
+            fread(&HighScore, sizeof(int), 1, Score);
             fclose(Score);
             float scoreTextWidth = MeasureText(TextFormat("%i", totalScore), 65);
             float scoreX = (GetScreenWidth() - scoreTextWidth) / 2;
@@ -775,8 +788,8 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             {
                 DrawTexture(highscore, GetScreenWidth() / 2 - highscore.width / 2, GetScreenHeight() / 2 + score.height - 20, WHITE);
                 DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY2}, 60, 1, RED);
-                Score = fopen("HighScore.txt", "w");
-                fprintf(Score, "%i", totalScore);
+                Score = fopen("HighScore.dll", "wb");
+                fwrite(&totalScore, sizeof(int), 1, Score);
                 fclose(Score);
             }
 
