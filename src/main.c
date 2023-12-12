@@ -373,13 +373,14 @@ void questionUpdate(char filename[], Texture2D background)
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
     Sound Incorrect = LoadSound("assets/INCORRECTO.mp3");
     static long int filePos = 0;
-    char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
+    char answer = 'x';
     fseek(fp, filePos, SEEK_SET);
     Question preguntas[MAX_QUESTIONS];
     int i = 0;
+
     timer.startTime = GetTime();
     timer.countdown = 12;
-    Color originalColor = WHITE;
+    Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
     if (fp == NULL)
@@ -389,12 +390,11 @@ void questionUpdate(char filename[], Texture2D background)
     }
     else
     {
-        Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
+        Rectangle answerRect[4];
 
         while (i < 5 && (GetTime() - timer.startTime < timer.countdown))
         {
             UpdateMusicStream(GameMusic);
-            answer = 'x';
             readFile(fp, preguntas);
 
             BeginDrawing();
@@ -402,44 +402,44 @@ void questionUpdate(char filename[], Texture2D background)
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
 
-            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
-            float textWidth = MeasureText(preguntas[currentQuestion].question, 30);
+            float textWidth = MeasureText(preguntas[currentQuestion].question, 40);
             float x = (GetScreenWidth() - textWidth) / 2;
-            float y = (GetScreenHeight() - 30) / 3.5 - 50; // Ajustar la posición vertical según sea necesario
+            float y = (GetScreenHeight() - 30) / 3.5 - 50;
 
-            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 30, 1, originalColor);
+            // Dibuja la pregunta con trazado
+            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 40, 1, originalColor);
+            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x - 2, y - 2}, 40, 1, WHITE);
 
-            // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
-                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 30);
-                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 50, textWidth, 30};
+                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 40);
+                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 70, textWidth, 40};
 
                 Vector2 mousePointLocal = {GetMouseX() - answerRect[j].x, GetMouseY() - answerRect[j].y};
 
-                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 30}))
+                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
                 {
-                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 30, 1, hoverColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 40, 1, hoverColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x - 2, answerRect[j].y - 2}, 40, 1, WHITE);
 
-                    // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                     {
-                        if (j == 0)
+                        switch (j)
                         {
+                        case 0:
                             answer = 'a';
-                        }
-                        else if (j == 1)
-                        {
+                            break;
+                        case 1:
                             answer = 'b';
-                        }
-                        else if (j == 2)
-                        {
+                            break;
+                        case 2:
                             answer = 'c';
-                        }
-                        else if (j == 3)
-                        {
+                            break;
+                        case 3:
                             answer = 'd';
+                            break;
                         }
+
                         if (answer == preguntas[currentQuestion].correctAnswer)
                         {
                             PlaySound(Correct);
@@ -449,22 +449,26 @@ void questionUpdate(char filename[], Texture2D background)
                         {
                             PlaySound(Incorrect);
                         }
+
                         filePos = ftell(fp);
-                        i++; // Mueve i antes del incremento de currentQuestion
+                        i++;
                         currentQuestion++;
                     }
                 }
                 else
                 {
-                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 30, 1, originalColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 40, 1, originalColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x - 2, answerRect[j].y - 2}, 40, 1, WHITE);
                 }
             }
             EndDrawing();
         }
+
         if (GetTime() - timer.startTime >= timer.countdown)
         {
             gameState = GAME_OVER;
         }
+
         fclose(fp);
     }
 }
@@ -809,29 +813,38 @@ void OptionsUpdate(Music menuMusic, Music gameMusic, Sound mySound, Texture2D st
 
     Vector2 mousePoint = GetMousePosition();
 
-    float textureWidth = (float)startGameTexture.width;
-    float textureHeight = (float)startGameTexture.height;
+    float textureWidth, textureHeight;
+    float x, y;
 
-    float x = (GetScreenWidth() - textureWidth) / 2;
-    float y = screenHeights[currentResolutionIndex] / 2 - 60;
+    // Botón Start Game
+    textureWidth = (float)startGameTexture.width;
+    textureHeight = (float)startGameTexture.height;
+    x = (GetScreenWidth() - textureWidth) / 2;
+    y = (GetScreenHeight() - textureHeight * 4) / 2;
     Rectangle startGameBounds = {x, y, textureWidth, textureHeight};
     isMouseOverStartGame = CheckCollisionPointRec(mousePoint, startGameBounds);
 
+    // Botón Options
     textureWidth = (float)optionsTexture.width;
     textureHeight = (float)optionsTexture.height;
-    y += 80;
+    x = (GetScreenWidth() - textureWidth) / 2;
+    y += textureHeight + 40; // Espacio vertical entre botones
     Rectangle optionsBounds = {x, y, textureWidth, textureHeight};
     isMouseOverOptions = CheckCollisionPointRec(mousePoint, optionsBounds);
 
+    // Botón Credits
     textureWidth = (float)creditsTexture.width;
     textureHeight = (float)creditsTexture.height;
-    y += 80;
+    x = (GetScreenWidth() - textureWidth) / 2;
+    y += textureHeight + 40; // Espacio vertical entre botones
     Rectangle creditsBounds = {x, y, textureWidth, textureHeight};
     isMouseOverCredits = CheckCollisionPointRec(mousePoint, creditsBounds);
 
+    // Botón Exit
     textureWidth = (float)exitTexture.width;
     textureHeight = (float)exitTexture.height;
-    y += 80;
+    x = (GetScreenWidth() - textureWidth) / 2;
+    y += textureHeight + 40; // Espacio vertical entre botones
     Rectangle exitBounds = {x, y, textureWidth, textureHeight};
     isMouseOverExit = CheckCollisionPointRec(mousePoint, exitBounds);
 
