@@ -1,4 +1,4 @@
-¿Cuanto es la suma de 5 + 7?
+Cuanto es la suma de 5 + 7?
 a) 10
 b) 12
 c) 14
@@ -10,130 +10,147 @@ b) 6
 c) 7
 d) 8
 b
-¿Cual es el resultado de multiplicar 9 por 6?
+Cual es el resultado de multiplicar 9 por 6?
 a) 45
 b) 54
 c) 63
 d) 72
 b
-¿Cual es el resultado de restar 10 menos 6?
+Cual es el resultado de restar 10 menos 6?
 a) 5
 b) 6
 c) 7
 d) 4
 d
-¿Cuanto es la resta de 15 menos 9?
+Cuanto es la resta de 15 menos 9?
 a) 4
 b) 6
 c) 8
 d) 10
 b
-¿Cuantos grados tiene un triangulo rectangulo?
+Cuantos grados tiene un triangulo rectangulo?
 a) 45
 b) 60
 c) 90
 d) 180
 d
-Pepito tiene 10 manzadas y quiere dividirlas entre sus 5 amigos¿Cuantas mansanas le tocarian a cada uno?
-a) 3
-b) 1
-c) 2
-d) 4
-c
-Si un tren viaja a una velocidad de 60 km/h, ¿cuanto tiempo tomara recorrer 120 km?
-a) 1 hora
-b) 2 horas
-c) 3 horas
-d) 4 horas
+Cuantos lados tiene un triangulo?
+a) 4 lados
+b) 3 lados
+c) 2 lados
+d) 5 lados
 b
-¿Cual es el resultado de dividir 48 entre 6?
-a) 6
-b) 8
-c) 10
-d) 12
+Cual es el resultado de dividir 8 entre 2?
+a) 4
+b) 6
+c) 2
+d) 10
 a
-¿Cuanto es la suma de 15 + 19?
+Cuanto es la suma de 15 + 19?
 a) 30
 b) 32
 c) 34
 d) 36
 c
-¿Cuanto es la suma de 8 + 3?
+Cuanto es la suma de 8 + 3?
 a) 9
 b) 10
 c) 11
 d) 12
 10
-¿Cuantos lados tiene un pentagono?
+Cuantos lados tiene un pentagono?
 a) 4
 b) 5
 c) 6
 d) 7
 b
-Si un tren viaja a una velocidad de 90 km/h, ¿cuanto tiempo tomara recorrer 180 km?
-a) 1 hora
-b) 2 horas
-c) 3 horas
-d) 4 horas
+Si vas a 60k/h. cuanto habras recorrido en 2 horas
+a) 130km
+b) 120km
+c) 100km
+d) Ninguna de las anteriores
 b
-Juan tiene 24 caramelos y quiere compartirlos entre 4 amigos. ¿Cuantos caramelos le tocaraan a cada uno?
-a) 4
-b) 6
-c) 8
-d) 10
+si tienes 12 canicas y compras 13 .cuantas tienes ahora?
+a) 23
+b) 24
+c) 25
+d) 21
 8
-¿Cuanto es la resta de 20 menos 13?
+Cuanto es la resta de 20 menos 13?
 a) 5
 b) 6
 c) 7
 d) 8
 b
-¿Cuantos lados tiene un Cuadrado?
+Cuantos lados tiene un Cuadrado?
 a) 6
 b) 4
 c) 3
 d) 5
 b
-¿Cual es el resultado de dividir 35 entre 5?
+Cual es el resultado de dividir 35 entre 5?
 a) 5
 b) 7
 c) 10
 d) 12
 b
-¿Cuánto es la resta de 15 menos 8?
+Cuanto es la resta de 15 menos 8?
 a) 5
 b) 6
 c) 7
 d) 8
 c
-¿Cual es el resultado de multiplicar 7 por 9?
+Cual es el resultado de multiplicar 7 por 9?
 a) 56
 b) 63
 c) 72
 d) 81
 b
-¿Cuanto es la suma de 8 + 3?
+Cuanto es la suma de 8 + 3?
 a) 9
 b) 10
 c) 11
 d) 12
 c
-Si un automovil viaja a una velocidad de 80 km/h, ¿cuanto tiempo tomara recorrer 160 km?
+Area de un cuadrado de 4cmX4cm:
+a) 10cm2
+b) 12m2
+c) 16cm2
+d) 8cm2
+c
+Si viajas a 90km/h, en cuanto tiempo habras recorrido 270km?
 a) 1 hora
 b) 2 horas
 c) 3 horas
 d) 4 horas
 b
-¿Cuanto es la resta de 25 menos 17?
+Cuanto es la resta de 25 menos 17?
 a) 5
 b) 6
 c) 7
 d) 8
 d
-¿Cual es el resultado de multiplicar 12 por 4?
+Cual es el resultado de multiplicar 12 por 4?
 a) 40
 b) 44
 c) 48
 d) 52
 c 
-
+Si tienes 50$ y gastas 27$. Cuanto dinero te queda?
+a) 23
+b) 21
+c) 17
+d) 19
+a
+Cuanto es la divicion de 10/5?
+a) 3
+b) 8
+c) 5
+d) 2
+d
+Area de un rectangulo de b=12cm, h=10cm:
+a) 140
+b) 120
+c) 124
+d) 144
+b

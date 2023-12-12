@@ -1,114 +1,201 @@
-Cual es el sinonimo de "alegre"
-a) Triste
-b) Rapido
-c) Feliz
-d) Grande
-c
-Cuantas silabas tiene la palabra "ventana"
-a) 2
-b) 3
-c) 4
-d) 5
-b
-Cual letra sigue despues de la "K" en el abecedario
-a) L
-b) M
-c) N
-d) O
-a
-Cual es el plural correcto de la palabra "dia"
-a) Dias
-b) Diases
-c) Dios
-d) Diases
-a
-Cual es el antonimo de "pequeno"
-a) Grande
-b) Rapido
-c) Fuerte
-d) Alto
-a
-Cuantas letras tiene la palabra "silla"
-a) 3
-b) 4
-c) 5
-d) 6
-c
-Cual es la ultima letra del abecedario
-a) W
-b) Y
-c) Z
-d) X
-c
-Cual es el plural correcto de la palabra "nino"
-a) Ninos
-b) Ninoes
-c) Nineses
-d) Ninores
-a
-Cual es la letra que sigue despues de la "R" en el abecedario
-a) S
-b) T
+Cual de las siguientes letras es una vocal?
+a) B
+b) L
 c) U
-d) Q
+d) G
+c
+Cual de estas palabras esta escrita en plural?
+a) Cancion
+b) Lapices
+c) Telefono
+d) Arbol
+b
+Cual es el opuesto de "dia"?
+a) Noche
+b) Sol
+c) Luna
+d) Manana
 a
-Cual de las siguientes palabras esta escrita correctamente
+Cual de estas palabras esta escrita en singular?
+a) Plantas
+b) Personas
+c) Gato
+d) Videos
+c
+Cual es la ultima letra del abecedario?
+a) W
+b) Z
+c) Y
+d) X
+b
+Cual de las siguientes palabras está escrita correctamente?
 a) Examenen
 b) Exsamen
 c) Examen
 d) Ecsamen
 c
-Cual es la palabra que significa lo contrario de "grande"
+Es lo contrario de "grande":
 a) Pequeno
 b) Rapido
 c) Fuerte
 d) Alto
 a
-En cual de las siguientes palabras la letra "G" tiene un sonido suave
-a) Gato
-b) Gente
-c) Guitarra
-d) Globo
+¿Cuál es un sustantivo?
+a) Casa
+b) Corriendo
+c) Rápidamente
+d) Saltar
+a
+¿Qué es un adjetivo?
+a) Una acción
+b) Una descripción
+c) Un lugar
+d) Una persona
 b
-Cuantas silabas tiene la palabra "mariposa"
+¿Qué es un sinónimo de "contento"?
+a) Triste
+b) Feliz
+c) Enojado
+d) Asustado
+b
+¿Qué tipo de palabra es "rápidamente"?
+a) Verbo
+b) Sustantivo
+c) Adverbio
+d) Adjetivo
+c
+¿Cuál es el plural de "flor"?
+a) Flores
+b) Floras
+c) Floros
+d) Florcitas
+d
+Cuantas sílabas tiene la palabra "mariposa"?
 a) 2
 b) 3
 c) 4
 d) 5
 c
-Como se llama la letra que representa el sonido "ch" en "chico"
+Como se llama la letra que representa el sonido "ch" en "chico"?
 a) Ce
 b) Che
 c) Chi
 d) Cho
 b
-Cuantas silabas tiene la palabra "elefante"
+Cual de las siguientes palabras es un sinonimo de "Mejorar"?
+a) Simplificar
+b) Sintetizar
+c) Planificar
+d) Perfeccionar
+d
+Que es un palindromo?
+a) Una frase que significa lo mismo que otra
+b) Una frase que se lee de la misma manera al derecho y al reves
+c) Una frase  que significa lo opuesto que otra
+d) Ninguna de las anteriores
+b
+Las palabras que terminan en "ar,er,ir" son ejemplos de:
+a) Verbos infinitivos
+b) Verbos regulares
+c) Verbos irregulares
+d) Verbos auxiliares
+a
+Cual de las siguientes palabras esta escrita correctamente?
+a) Allmuerzo
+b) Almursso
+c) Almuerxo
+d) Almuerzo
+d
+Cuantas silabas tiene la palabra "escuela"?
 a) 2
 b) 3
 c) 4
 d) 5
-c
-Cual es el plural correcto de la palabra "ciudad"
-a) Ciudads
-b) Ciudadanos
-c) Ciudades
-d) Ciudadas
-c
-Cual es la letra que sigue despues de la "P" en el abecedario
-a) Q
-b) R
-c) S
-d) T
+b
+Cual es la letra que sigue despues de la "R" en el abecedario?
+a) S
+b) T
+c) U
+d) Q
 a
-Cual es el antonimo de "cerrar"
+Cual es el plural correcto de la palabra "pajaro"?
+a) Pajaros
+b) Pajaras
+c) Pajaris
+d) Pajares
+a
+Que palabra es un antonimo de "cerrar"?
 a) Cercar
 b) Crear
 c) Abrir
 d) Bloquear
 c
-Cual de las siguientes palabras esta escrita en singular
+Cual de las siguientes palabras esta escrita en singular?
 a) Flores
 b) Arboles
-c) Rio
+c) Río
 d) Montanas
 c
+Cual es la letra que sigue despues de la "G" en el abecedario?
+a) H
+b) I
+c) F
+d) J
+a
+Cual de es un sinonimo de "necesidad"?
+a) Obligacion
+b) Urgenia
+c) Requisito
+d) Precision
+b
+¿Qué es un verbo?
+a) Una acción
+b) Una persona
+c) Un lugar
+d) Un sentimiento
+a
+¿Cuál es un ejemplo de un adjetivo?
+a) Correr
+b) Rápidamente
+c) Casa
+d) Bonito
+d
+¿Cuál es el antónimo de "frío"?
+a) Caliente
+b) Pequeño
+c) Lento
+d) Dulce
+a
+¿Cuál es el plural de "libro"?
+a) Libros
+b) Libres
+c) Librería
+d) Librero
+b
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
