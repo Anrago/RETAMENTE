@@ -4,7 +4,7 @@ b) 12
 c) 14
 d) 15
 b
-¿Cuantos lados tiene un hexágono?
+Cuantos lados tiene un hexagono?
 a) 5
 b) 6
 c) 7
