@@ -1,108 +1,175 @@
-¿Cuánto es la suma de 5 + 7?
+¿Cuanto es la suma de 5 + 7?
 a) 10
 b) 12
 c) 14
 d) 15
 b
-¿Cuántos lados tiene un hexágono?
+¿Cuantos lados tiene un hexágono?
 a) 5
 b) 6
 c) 7
 d) 8
 b
-¿Cuál es el resultado de multiplicar 9 por 6?
+¿Cual es el resultado de multiplicar 9 por 6?
 a) 45
 b) 54
 c) 63
 d) 72
 b
-¿Cuál es el cuadrado de 8?
-a) 12
-b) 14
-c) 16
-d) 64
+¿Cual es el resultado de restar 10 menos 6?
+a) 5
+b) 6
+c) 7
+d) 4
 d
-¿Cuánto es la resta de 15 menos 9?
+¿Cuanto es la resta de 15 menos 9?
 a) 4
 b) 6
 c) 8
 d) 10
 b
-¿Cuántos grados tiene un triángulo rectángulo?
+¿Cuantos grados tiene un triangulo rectangulo?
 a) 45
 b) 60
 c) 90
 d) 180
 d
-¿Cuánto es la raíz cuadrada de 81?
-a) 6
-b) 8
-c) 9
-d) 10
+Pepito tiene 10 manzadas y quiere dividirlas entre sus 5 amigos¿Cuantas mansanas le tocarian a cada uno?
+a) 3
+b) 1
+c) 2
+d) 4
 c
-Si un tren viaja a una velocidad de 60 km/h, ¿cuánto tiempo tomará recorrer 120 km?
+Si un tren viaja a una velocidad de 60 km/h, ¿cuanto tiempo tomara recorrer 120 km?
 a) 1 hora
 b) 2 horas
 c) 3 horas
 d) 4 horas
 b
-¿Cuál es el resultado de dividir 48 entre 6?
+¿Cual es el resultado de dividir 48 entre 6?
 a) 6
 b) 8
 c) 10
 d) 12
 a
-¿Cuánto es la suma de 5 + 7?
-a) 10
-b) 12
-c) 14
-d) 15
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+
+
+
+
+
+
+¿Cuanto es la suma de 15 + 19?
+a) 30
+b) 32
+c) 34
+d) 36
+c
+¿Cuanto es la suma de 8 + 3?
+a) 9
+b) 10
+c) 11
+d) 12
+10
+¿Cuantos lados tiene un pentagono?
+a) 4
+b) 5
+c) 6
+d) 7
 b
-¿Cuántos lados tiene un hexágono?
+Si un tren viaja a una velocidad de 90 km/h, ¿cuanto tiempo tomara recorrer 180 km?
+a) 1 hora
+b) 2 horas
+c) 3 horas
+d) 4 horas
+b
+Juan tiene 24 caramelos y quiere compartirlos entre 4 amigos. ¿Cuantos caramelos le tocaraan a cada uno?
+a) 4
+b) 6
+c) 8
+d) 10
+8
+¿Cuanto es la resta de 20 menos 13?
 a) 5
 b) 6
 c) 7
 d) 8
 b
-¿Cuál es el resultado de multiplicar 9 por 6?
-a) 45
-b) 54
-c) 63
-d) 72
-b
-¿Cuál es el cuadrado de 8?
-a) 12
-b) 14
-c) 16
-d) 64
-d
-¿Cuánto es la resta de 15 menos 9?
-a) 4
-b) 6
-c) 8
-d) 10
-b
-¿Cuántos grados tiene un triángulo rectángulo?
-a) 45
-b) 60
-c) 90
-d) 180
-d
-¿Cuánto es la raíz cuadrada de 81?
+¿Cuantos lados tiene un Cuadrado?
 a) 6
-b) 8
-c) 9
-d) 10
+b) 4
+c) 3
+d) 5
+b
+¿Cual es el resultado de dividir 35 entre 5?
+a) 5
+b) 7
+c) 10
+d) 12
+b
+¿Cuánto es la resta de 15 menos 8?
+a) 5
+b) 6
+c) 7
+d) 8
 c
-Si un tren viaja a una velocidad de 60 km/h, ¿cuánto tiempo tomará recorrer 120 km?
+¿Cual es el resultado de multiplicar 7 por 9?
+a) 56
+b) 63
+c) 72
+d) 81
+b
+¿Cuanto es la suma de 8 + 3?
+a) 9
+b) 10
+c) 11
+d) 12
+c
+Si un automovil viaja a una velocidad de 80 km/h, ¿cuanto tiempo tomara recorrer 160 km?
 a) 1 hora
 b) 2 horas
 c) 3 horas
 d) 4 horas
 b
-¿Cuál es el resultado de dividir 48 entre 6?
-a) 6
-b) 8
-c) 10
-d) 12
-a
+¿Cuanto es la resta de 25 menos 17?
+a) 5
+b) 6
+c) 7
+d) 8
+d
+¿Cual es el resultado de multiplicar 12 por 4?
+a) 40
+b) 44
+c) 48
+d) 52
+c 
+

@@ -1,4 +1,4 @@
-¿Cuál de las siguientes letras no es una vocal?
+¿Cual de las siguientes letras es una vocal?
 a) B
 b) L
 c) U
@@ -58,169 +58,109 @@ b) Che
 c) Chi
 d) Cho
 b
-¿Cuánto es la suma de 5 + 7?
-a) 10
-b) 12
-c) 14
-d) 15
-b
-¿Cuántos lados tiene un hexágono?
-a) 5
-b) 6
-c) 7
-d) 8
-b
-¿Cuál es el resultado de multiplicar 9 por 6?
-a) 45
-b) 54
-c) 63
-d) 72
-b
-¿Cuál es el cuadrado de 8?
-a) 12
-b) 14
-c) 16
-d) 64
+¿Cual de las siguientes palabras es un sinonimo de "Mejorar"?
+a) Simplificar
+b) Sintetizar
+c) Planificar
+d) Perfeccionar
 d
-¿Cuánto es la resta de 15 menos 9?
-a) 4
-b) 6
-c) 8
-d) 10
+¿Que es un palindromo?
+a) Una frase que significa lo mismo que otra
+b) Una frase que se lee de la misma manera al derecho y al reves
+c) Una frase  que significa lo opuesto que otra
+d) Ninguna de las anteriores
 b
-¿Cuántos grados tiene un triángulo rectángulo?
-a) 45
-b) 60
-c) 90
-d) 180
+Las palabras que terminan en "ar,er,ir" son ejemplos de:
+a) Verbos infinitivos
+b) Verbos regulares
+c) Verbos irregulares
+d) Verbos auxiliares
+a
+¿Cual de las siguientes palabras esta escrita correctamente?
+a) Allmuerzo
+b) Almursso
+c) Almuerxo
+d) Almuerzo
 d
-¿Cuánto es la raíz cuadrada de 81?
-a) 6
-b) 8
-c) 9
-d) 10
+¿Cuantas silabas tiene la palabra "escuela"?
+a) 2
+b) 3
+c) 4
+d) 5
+b
+¿Cual es la letra que sigue despues de la "R" en el abecedario?
+a) S
+b) T
+c) U
+d) Q
+a
+¿Cual es el plural correcto de la palabra "pajaro"?
+a) Pajaros
+b) Pajaras
+c) Pajaris
+d) Pajares
+a
+¿Que palabra es un antonimo de "cerrar"?
+a) Cercar
+b) Crear
+c) Abrir
+d) Bloquear
 c
-Si un tren viaja a una velocidad de 60 km/h, ¿cuánto tiempo tomará recorrer 120 km?
-a) 1 hora
-b) 2 horas
-c) 3 horas
-d) 4 horas
-b
-¿Cuál es el resultado de dividir 48 entre 6?
+¿Cual de las siguientes palabras esta escrita en singular?
+a) Flores
+b) Arboles
+c) Río
+d) Montañas
+c
+¿Cual es la letra que sigue despues de la "G" en el abecedario?
+a) H
+b) I
+c) F
+d) J
+a
+¿Cual es el resultado de dividir 48 entre 6?
 a) 6
 b) 8
 c) 10
 d) 12
 a
-¿Cuál de las siguientes letras no es una vocal?
-a) B
-b) L
-c) U
-d) G
-c
-¿Cual de estas palabras esta escrita en plural?
-a) Cancion
-b) Lapices
-c) Telefono
-d) Arbol
-b
-¿Cuál es el opuesto de "día"?
-a) Noche
-b) Sol
-c) Luna
-d) Mañana
-a
-¿Cual de estas palabras esta escrita en singular?
-a) Plantas
-b) Personas
-c) Gato
-d) Videos
-c
-¿Cuál es la última letra del abecedario?
-a) W
-b) Z
-c) Y
-d) X
-b
-¿Cuál de las siguientes palabras está escrita correctamente?
-a) Examenen
-b) Exsamen
-c) Examen
-d) Ecsamen
-c
-¿Cuál es la palabra que significa lo contrario de "grande"?
-a) Pequeño
-b) Rápido
-c) Fuerte
-d) Alto
-a
-¿En cuál de las siguientes palabras la letra "G" tiene un sonido suave?
-a) Gato
-b) Gente
-c) Guitarra
-d) Globo
-b
-¿Cuántas sílabas tiene la palabra "mariposa"?
-a) 2
-b) 3
-c) 4
-d) 5
-c
-¿Cómo se llama la letra que representa el sonido "ch" en "chico"?
-a) Ce
-b) Che
-c) Chi
-d) Cho
-b
-¿Cuánto es la suma de 5 + 7?
-a) 10
-b) 12
-c) 14
-d) 15
-b
-¿Cuántos lados tiene un hexágono?
-a) 5
-b) 6
-c) 7
-d) 8
-b
-¿Cuál es el resultado de multiplicar 9 por 6?
-a) 45
-b) 54
-c) 63
-d) 72
-b
-¿Cuál es el cuadrado de 8?
-a) 12
-b) 14
-c) 16
-d) 64
-d
-¿Cuánto es la resta de 15 menos 9?
-a) 4
-b) 6
-c) 8
-d) 10
-b
-¿Cuántos grados tiene un triángulo rectángulo?
-a) 45
-b) 60
-c) 90
-d) 180
-d
-¿Cuánto es la raíz cuadrada de 81?
+¿Cual es el resultado de dividir 48 entre 6?
 a) 6
 b) 8
-c) 9
-d) 10
-c
-Si un tren viaja a una velocidad de 60 km/h, ¿cuánto tiempo tomará recorrer 120 km?
-a) 1 hora
-b) 2 horas
-c) 3 horas
-d) 4 horas
-b
-¿Cuál es el resultado de dividir 48 entre 6?
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
+a) 6
+b) 8
+c) 10
+d) 12
+a
+¿Cual es el resultado de dividir 48 entre 6?
 a) 6
 b) 8
 c) 10

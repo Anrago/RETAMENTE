@@ -1,29 +1,17 @@
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX_QUESTIONS 100
+#define MAX_QUESTIONS 20
 
-const int resolutionsCount = 3;
-const int screenWidths[] = {1280, 1600, 1920};
-const int screenHeights[] = {720, 1200, 1080};
-int currentResolutionIndex = 0;
-
-const int MAX_FPS = 60;
-float timePlayed = 0.0f;
-int EXIT_FLAG = 1;
-
-long filePosition = 0;
-int currentQuestion = 1;
-int correctAnswers = 0;
 typedef struct question
 {
     char question[100];
     char answer[4][100];
     char correctAnswer;
-} Tquestion;
-
+} Question;
 typedef enum
 {
     MENU,
@@ -41,20 +29,35 @@ typedef enum
     BACK_TO_MENU
 } OptionAction;
 
+typedef enum
+{
+    MENU2,
+    GAME,
+    GAME_OVER
+} GameState;
+
+GameState gameState = GAME;
 GameScene currentScene = MENU;
+
 typedef struct
 {
     Rectangle bounds;
-    const char *text;
+    Texture2D image;
     GameScene action;
 } MenuItem;
 
 typedef struct
 {
     Rectangle bounds;
-    const char *text;
-    OptionAction action;
+    Texture2D image;
+    GameScene action;
 } OptionItem;
+
+typedef struct
+{
+    int startTime;
+    int countdown;
+} Timer;
 
 typedef struct
 {
@@ -63,13 +66,34 @@ typedef struct
     Color color;
 } RouletteSector;
 
-/*
---------------------------------------------------------------------------------------------------
-*/
-bool CheckAngleInSector(float angle, RouletteSector sector)
+typedef struct
 {
-    return angle >= sector.startAngle && angle < sector.endAngle;
-}
+    int countdown;
+    double timer;
+    bool transition;
+} CountdownState;
+
+const int resolutionsCount = 3;
+const int screenWidths[] = {1280, 1600, 1920};
+const int screenHeights[] = {720, 1200, 1080};
+int currentResolutionIndex = 0;
+
+const int MAX_FPS = 60;
+float timePlayed = 0.0f;
+int EXIT_FLAG = 1;
+int currentQuestion = 1;
+int correctAnswers = 0;
+int finalScore = 0;
+int remainingSeconds;
+
+bool isMouseOverStartGame = false;
+bool isMouseOverOptions = false;
+bool isMouseOverCredits = false;
+bool isMouseOverExit = false;
+
+Font myFont;
+Timer timer;
+Music GameMusic ;
 
 const char *GetColorName(Color color)
 {
@@ -86,23 +110,19 @@ const char *GetColorName(Color color)
 //================================================================================================//
 void PlayMusic(Music music);
 void ChangeResolution();
-void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
-void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[]);
-void StartGameUpdate(int screenWidth, int screenHeight);
-void StartGameDraw();
-void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[]);
-void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[]);
+bool CheckAngleInSector(float angle, RouletteSector sector);
+void MenuUpdate(Sound mySound, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture);
+void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture);
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver);
+void StartGameDraw(Texture2D background);
+void OptionsUpdate(Music menuMusic, Sound mySound, size_t optionItemsCount, OptionItem optionItems[]);
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, size_t optionItemsCount, OptionItem optionItems[]);
 void CreditsUpdate();
 void CreditsDraw();
-void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation);
-void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color);
-void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS]);
-void questionUpdate(char filename[]);
 //================================================================================================//
 
 int main(void)
 {
-    srand(time(NULL));
     int screenWidth = screenWidths[currentResolutionIndex];
     int screenHeight = screenHeights[currentResolutionIndex];
     InitWindow(screenWidth, screenHeight, "RetaMente");
@@ -111,20 +131,29 @@ int main(void)
 
     // MENU ITEMS //
     //================================================================================================//
+    Image mainMenu1 = LoadImage("assets/mainMenu/start_game.png");
+    Texture2D mainMenu1Texture = LoadTextureFromImage(mainMenu1);
+    Image mainMenu2 = LoadImage("assets/mainMenu/options.png");
+    Texture2D mainMenu2Texture = LoadTextureFromImage(mainMenu2);
+    Image mainMenu3 = LoadImage("assets/mainMenu/credits.png");
+    Texture2D mainMenu3Texture = LoadTextureFromImage(mainMenu3);
+    Image mainMenu4 = LoadImage("assets/mainMenu/exit.png");
+    Texture2D mainMenu4Texture = LoadTextureFromImage(mainMenu4);
+
     MenuItem menuItems[] = {
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, "Iniciar", START_GAME},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 10, 200, 40}, "Opciones", OPTIONS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 40, 200, 40}, "Créditos", CREDITS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 90, 200, 40}, "Salir", EXIT}};
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, mainMenu1Texture, START_GAME},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 20, 200, 40}, LoadTexture("assets/mainMenu/options"), OPTIONS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 100, 200, 40}, LoadTexture("assets/mainMenu/credits"), CREDITS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 180, 200, 40}, LoadTexture("assets/mainMenu/exit"), EXIT}};
     //================================================================================================//
 
     // OPTION ITEMS //
     //================================================================================================//
     OptionItem optionItems[] = {
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, "Silenciar Musica", MUTE_MUSIC},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 10, 200, 40}, "Silenciar efectos de sonido", MUTE_SOUNDS},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 40, 200, 40}, "Cambiar resolucion", CHANGE_RESOLUTION},
-        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 90, 200, 40}, "Volver al menu", BACK_TO_MENU}};
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 - 60, 200, 40}, LoadTexture("assets/optionMenu/music"), MUTE_MUSIC},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 20, 200, 40}, LoadTexture("assets/optionMenu/music_effects"), MUTE_SOUNDS},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 100, 200, 40}, LoadTexture("assets/optionMenu/change_resolution"), CHANGE_RESOLUTION},
+        {{screenWidths[currentResolutionIndex] / 2 - 100, screenHeights[currentResolutionIndex] / 2 + 180, 200, 40}, LoadTexture("assets/optionMenu/go_to_menu"), BACK_TO_MENU}};
     //================================================================================================//
 
     size_t menuItemsCount = sizeof(menuItems) / sizeof(menuItems[0]);
@@ -132,17 +161,39 @@ int main(void)
 
     // MAIN MENU & OPTIONS MENU //
     //================================================================================================//
+    myFont = LoadFont("assets/font.ttf");
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
-    Image bgImage = LoadImage("assets/bg_menu.png");
-    Texture2D background = LoadTextureFromImage(bgImage);
+    Texture2D background[16];
+
+    for (int i = 1; i < 16; i++)
+    {
+        Image bgImage = LoadImage(TextFormat("assets/holaBackground/hola%d.png", i));
+        background[i - 1] = LoadTextureFromImage(bgImage);
+    }
+    Image bgGame = LoadImage("assets/bg_game.png");
+    Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
     Image optionMenu = LoadImage("assets/optionMenu.png");
     Texture2D optionMenuTexture = LoadTextureFromImage(optionMenu);
+    Image areYouReadybg = LoadImage("assets/are_you_ready_bg.png");
+    Texture2D areYouReadybgTexture = LoadTextureFromImage(areYouReadybg);
+    Image areYouReady = LoadImage("assets/are_you_ready.png");
+    Texture2D areYouReadyTexture = LoadTextureFromImage(areYouReady);
+    Image number3 = LoadImage("assets/3.png");
+    Texture2D number3Texture = LoadTextureFromImage(number3);
+    Image number2 = LoadImage("assets/2.png");
+    Texture2D number2Texture = LoadTextureFromImage(number2);
+    Image number1 = LoadImage("assets/1.png");
+    Texture2D number1Texture = LoadTextureFromImage(number1);
+    Image gameOver = LoadImage("assets/game_over.png");
+    Texture2D gameOverTexture = LoadTextureFromImage(gameOver);
     //================================================================================================//
 
     PlayMusicStream(menuMusic);
+
+    int hola = 0;
 
     while (!WindowShouldClose() && EXIT_FLAG)
     {
@@ -150,33 +201,67 @@ int main(void)
         {
         case MENU:
             PlayMusic(menuMusic);
-            MenuUpdate(menuButton, menuItemsCount, menuItems);
-            MenuDraw(background, tittleTexture, tittle, menuItemsCount, menuItems);
+            MenuUpdate(menuButton, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
+            MenuDraw(background[hola], tittleTexture, tittle, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
             break;
-        case START_GAME:
-            StartGameUpdate(screenWidth, screenHeight);
 
+        case START_GAME:
+            PlayMusic(menuMusic);
+            RunCountdown(3, areYouReadyTexture, number3Texture, number2Texture, number1Texture, areYouReadybgTexture);
+            StartGameUpdate(screenWidth, screenHeight, menuButton, backgroundGame, gameOverTexture);
             break;
+
         case OPTIONS:
             PlayMusic(menuMusic);
             OptionsUpdate(menuMusic, menuButton, optionItemsCount, optionItems);
-            OptionsDraw(background, optionMenuTexture, optionMenu, optionItemsCount, optionItems);
+            OptionsDraw(background[hola], optionMenuTexture, optionItemsCount, optionItems);
             break;
+
         case CREDITS:
-            currentScene = CREDITS;
+            CreditsUpdate();
+            CreditsDraw();
             break;
+
         case EXIT:
             EXIT_FLAG = 0;
             break;
+
         default:
             break;
         }
+        hola++;
+
+        if (hola == 17)
+        {
+            hola = 0;
+        }
     }
 
-    UnloadTexture(background);
-    UnloadImage(bgImage);
+    for (int i = 0; i < 16; i++)
+    {
+        UnloadTexture(background[i]);
+    }
     UnloadMusicStream(menuMusic);
     UnloadSound(menuButton);
+    UnloadTexture(tittleTexture);
+    UnloadImage(tittle);
+    UnloadTexture(backgroundGame);
+    UnloadImage(bgGame);
+    UnloadTexture(optionMenuTexture);
+    UnloadImage(optionMenu);
+    UnloadTexture(areYouReadyTexture);
+    UnloadImage(areYouReady);
+    UnloadTexture(number3Texture);
+    UnloadImage(number3);
+    UnloadTexture(number2Texture);
+    UnloadImage(number2);
+    UnloadTexture(number1Texture);
+    UnloadImage(number1);
+    UnloadTexture(gameOverTexture);
+    UnloadImage(gameOver);
+    UnloadTexture(areYouReadybgTexture);
+    UnloadImage(areYouReadybg);
+    UnloadFont(myFont);
 
     CloseAudioDevice();
     CloseWindow();
@@ -211,254 +296,30 @@ void ChangeResolution()
     SetWindowSize(screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]);
 }
 
-void MenuUpdate(Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
+void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
 {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
-        Vector2 mousePoint = GetMousePosition();
+    int barHeight = 30;
+    int padding = 10;
 
-        for (int i = 0; i < menuItemsCount; i++)
-        {
-            float textWidth = MeasureText(menuItems[i].text, 40);
-            float x = (GetScreenWidth() - textWidth) / 2;
+    int currentTime = GetTime();
+    int elapsedSeconds = currentTime - timer.startTime;
+    remainingSeconds = timer.countdown - elapsedSeconds;
 
-            // Ajustar la posición de la colisión para centrar horizontalmente
-            Rectangle centeredBounds = {
-                x,
-                menuItems[i].bounds.y,
-                textWidth,
-                menuItems[i].bounds.height};
+    float barWidth = (float)elapsedSeconds / timer.countdown * screenWidth;
+    Rectangle barComplete = {0, 0, barWidth, barHeight};
 
-            if (CheckCollisionPointRec(mousePoint, centeredBounds))
-            {
-                PlaySound(mySound);
-                switch (menuItems[i].action)
-                {
-                case START_GAME:
-                    currentScene = START_GAME;
-                    break;
-                case OPTIONS:
-                    currentScene = OPTIONS;
-                    break;
-                case CREDITS:
-                    currentScene = CREDITS;
-                    break;
-                case EXIT:
-                    currentScene = EXIT;
-                    break;
-                }
-            }
-        }
-    }
+    Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
+
+    DrawRectangleRec(barComplete, RED);
+
+    DrawTextEx(myFont, TextFormat("Tiempo restante: %02ds", remainingSeconds), (Vector2){timerPosition.x, timerPosition.y}, 20, 2, BLACK);
 }
 
-void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, size_t menuItemsCount, MenuItem menuItems[])
+bool CheckAngleInSector(float angle, RouletteSector sector)
 {
-    BeginDrawing();
-    DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-    DrawTexture(tittleTexture, screenWidths[currentResolutionIndex] / 2 - tittle.width / 2, 60, WHITE);
-    for (int i = 0; i < menuItemsCount; i++)
-    {
-        float textWidth = MeasureText(menuItems[i].text, 40);
-
-        // Centrar horizontalmente el texto utilizando la resolución de la pantalla
-        float x = (GetScreenWidth() - textWidth) / 2;
-
-        Color textColor = BLACK;
-
-        // Ajustar la posición del mouse al sistema de coordenadas local del rectángulo
-        Vector2 mousePointLocal = {GetMouseX() - x, GetMouseY() - menuItems[i].bounds.y};
-
-        if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 40}))
-        {
-            textColor = YELLOW;
-        }
-
-        // Ajustar la posición y para centrar verticalmente el texto en el área definida
-        float y = menuItems[i].bounds.y + (menuItems[i].bounds.height - 40) / 2;
-
-        DrawText(menuItems[i].text, (int)x, (int)y, 40, textColor);
-    }
-
-    EndDrawing();
+    return angle >= sector.startAngle && angle < sector.endAngle;
 }
 
-void StartGameUpdate(int screenWidth, int screenHeight)
-{
-    char *n;
-    int num;
-    Color raund;
-    int band = 0;
-    Sound mySound = LoadSound("assets/Roulette Sound.mp3");
-    int sectorCount = 8;
-    RouletteSector sectors[8] = {
-        {0, 45, RED},
-        {45, 90, BLUE},
-        {90, 135, RED},
-        {135, 180, BLUE},
-        {180, 225, RED},
-        {225, 270, BLUE},
-        {270, 315, RED},
-        {315, 360, BLUE}};
-
-    float rotationSpeed = 0.0f;
-    float rotation = 0.0f;
-    bool spinning = false;
-
-    // Crear una textura simple para representar la flecha
-    RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
-    BeginTextureMode(arrowTexture);
-    ClearBackground(BLANK);
-
-    // Dibujar la flecha en la textura
-    DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
-    EndTextureMode();
-
-    while (!WindowShouldClose())
-    {
-        // Actualizar
-        if (IsKeyPressed(KEY_SPACE) && !spinning)
-        {
-            spinning = true;
-            rotationSpeed = 20.0f + GetRandomValue(-5, 5); // Velocidad de rotación más rápida y un poco de variación
-            PlaySound(mySound);
-        }
-
-        if (spinning)
-        {
-            rotation += rotationSpeed;
-            rotationSpeed *= 0.99f;
-
-            if (rotationSpeed < 0.1f)
-            {
-                spinning = false;
-                rotationSpeed = 0.0f;
-                int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
-                Color stoppedColor = sectors[sectorIndex].color;
-
-                if (ColorToInt(stoppedColor) != ColorToInt(RED))
-                {
-                    questionUpdate("MATE.txt");
-                }
-                else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
-                {
-                    questionUpdate("ESPA.txt");
-                }
-            }
-        }
-
-        // Dibujar
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        DrawRoulette(sectors, sectorCount, rotation);
-
-        // Dibujar flecha indicando la posición (ajustar las coordenadas según sea necesario)
-        Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
-        DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
-
-        EndDrawing();
-    }
-
-    // De-inicialización
-    UnloadRenderTexture(arrowTexture);
-}
-
-void StartGameDraw()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
-}
-
-void OptionsUpdate(Music menuMusic, Sound mySound, size_t menuItemsCount, MenuItem menuItems[])
-{
-    static bool muteMusic = false;
-    static bool muteSounds = false;
-
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        for (int i = 0; i < menuItemsCount; i++)
-        {
-            if (CheckCollisionPointRec(mousePoint, menuItems[i].bounds))
-            {
-                PlaySound(mySound);
-                switch (menuItems[i].action)
-                {
-                case MUTE_MUSIC:
-                    muteMusic = !muteMusic;
-                    if (muteMusic)
-                    {
-                        SetMusicVolume(menuMusic, 0.0f);
-                    }
-                    else
-                    {
-                        SetMusicVolume(menuMusic, 1.0f);
-                    }
-                    break;
-
-                case MUTE_SOUNDS:
-                    muteSounds = !muteSounds;
-                    if (muteSounds)
-                    {
-                        SetSoundVolume(mySound, 0.0f);
-                    }
-                    else
-                    {
-                        SetSoundVolume(mySound, 1.0f);
-                    }
-                    break;
-
-                case CHANGE_RESOLUTION:
-                    ChangeResolution();
-                    break;
-
-                case BACK_TO_MENU:
-                    currentScene = MENU;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Image optionMenu, size_t menuItemsCount, MenuItem menuItems[])
-{
-    BeginDrawing();
-    DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
-    DrawTexture(optionMenuTexture, screenWidths[currentResolutionIndex] / 2 - optionMenu.width / 2, 60, WHITE);
-    for (int i = 0; i < menuItemsCount; i++)
-    {
-        float textWidth = MeasureText(menuItems[i].text, 40);
-
-        float x = menuItems[i].bounds.x + (menuItems[i].bounds.width - textWidth) / 2;
-
-        Color textColor = BLACK;
-
-        if (CheckCollisionPointRec(GetMousePosition(), menuItems[i].bounds))
-        {
-            textColor = YELLOW;
-        }
-
-        DrawText(menuItems[i].text, x, menuItems[i].bounds.y + 10, 40, textColor);
-    }
-
-    EndDrawing();
-}
-
-void CreditsUpdate()
-{
-}
-
-void CreditsDraw()
-{
-}
-
-/*
---------------------------------------------------------------------------------------------------
-*/
 void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
 {
     float radius = 200.0f;
@@ -471,8 +332,6 @@ void DrawRoulette(RouletteSector *sectors, int sectorCount, float rotation)
     {
         DrawSector(center, radius, sectors[i].startAngle + rotation, sectors[i].endAngle + rotation, sectors[i].color);
     }
-
-    // Ajuste para centrar correctamente la ruleta
 }
 
 void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, Color color)
@@ -480,7 +339,7 @@ void DrawSector(Vector2 center, float radius, float startAngle, float endAngle, 
     DrawRing(center, radius, radius - 10, startAngle, endAngle, 10, color);
 }
 
-void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
+void readFile(FILE *fp, Question preguntas[MAX_QUESTIONS])
 {
     static int ant = -1;
 
@@ -504,7 +363,7 @@ void readFile(FILE *fp, Tquestion preguntas[MAX_QUESTIONS])
     }
 }
 
-void questionUpdate(char filename[])
+void questionUpdate(char filename[], Texture2D background)
 {
     FILE *fp = fopen(filename, "r");
     Sound Correct = LoadSound("assets/CORRECTO.mp3");
@@ -512,12 +371,13 @@ void questionUpdate(char filename[])
     static long int filePos = 0;
     char answer; // Inicializa la respuesta con un valor que no corresponde a ninguna opción válida
     fseek(fp, filePos, SEEK_SET);
-    Tquestion preguntas[MAX_QUESTIONS];
+    Question preguntas[MAX_QUESTIONS];
     int i = 0;
-
+    timer.startTime = GetTime();
+    timer.countdown = 20;
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
-
+    
     if (fp == NULL)
     {
         printf("Error al abrir el archivo");
@@ -527,20 +387,22 @@ void questionUpdate(char filename[])
     {
         Rectangle answerRect[4]; // Rectángulos que representan las áreas de las respuestas
 
-        while (i < 5 && !WindowShouldClose())
+        while (i < 5 && (GetTime() - timer.startTime < timer.countdown))
         {
+            UpdateMusicStream(GameMusic);
             answer = 'x';
             readFile(fp, preguntas);
 
             BeginDrawing();
             ClearBackground(RAYWHITE);
-
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
             // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
             float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
             float x = (GetScreenWidth() - textWidth) / 2;
             float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
-            DrawText(preguntas[currentQuestion].question, x, y, 20, originalColor);
+            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
 
             // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
@@ -594,6 +456,437 @@ void questionUpdate(char filename[])
             }
             EndDrawing();
         }
+        if (GetTime() - timer.startTime >= timer.countdown)
+        {
+            gameState = GAME_OVER;
+        }
         fclose(fp);
     }
 }
+
+void RunCountdown(int seconds, Texture2D areYouReadyTexture, Texture2D number3Texture, Texture2D number2Texture, Texture2D number1Texture, Texture2D background)
+{
+    CountdownState countdownState = {seconds, GetTime(), false};
+
+    while (!countdownState.transition)
+    {
+        if (GetTime() - countdownState.timer >= 1.0)
+        {
+            countdownState.countdown--;
+            countdownState.timer = GetTime();
+
+            if (countdownState.countdown <= 0)
+            {
+                countdownState.transition = true;
+            }
+        }
+
+        BeginDrawing();
+
+        DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+
+        DrawTexture(areYouReadyTexture, GetScreenWidth() / 2 - areYouReadyTexture.width / 2, GetScreenHeight() / 2 - areYouReadyTexture.height - 200 / 2, WHITE);
+
+        if (countdownState.countdown == 3)
+        {
+            DrawTexture(number3Texture, GetScreenWidth() / 2 - number3Texture.width / 2, GetScreenHeight() / 2 - number3Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 2)
+        {
+            DrawTexture(number2Texture, GetScreenWidth() / 2 - number2Texture.width / 2, GetScreenHeight() / 2 - number2Texture.height / 2, WHITE);
+        }
+        else if (countdownState.countdown == 1)
+        {
+            DrawTexture(number1Texture, GetScreenWidth() / 2 - number1Texture.width / 2, GetScreenHeight() / 2 - number1Texture.height / 2, WHITE);
+        }
+        else
+        {
+            DrawText("¡Preparado!", GetScreenWidth() / 2 - MeasureText("¡Preparado!", 20) / 2, GetScreenHeight() / 2 + 30, 20, GREEN);
+        }
+
+        EndDrawing();
+    }
+}
+
+void MenuUpdate(Sound mySound, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture)
+{
+    Vector2 mousePoint = GetMousePosition();
+
+    // Verifica si el mouse está sobre las texturas de las opciones
+    float textureWidth = (float)startGameTexture.width;
+    float textureHeight = (float)startGameTexture.height;
+
+    float x = (GetScreenWidth() - textureWidth) / 2;
+    float y = screenHeights[currentResolutionIndex] / 2 - 60;
+    Rectangle startGameBounds = {x, y, textureWidth, textureHeight};
+    isMouseOverStartGame = CheckCollisionPointRec(mousePoint, startGameBounds);
+
+    textureWidth = (float)optionsTexture.width;
+    textureHeight = (float)optionsTexture.height;
+    y += 80; // Ajusta la posición vertical para la siguiente opción
+    Rectangle optionsBounds = {x, y, textureWidth, textureHeight};
+    isMouseOverOptions = CheckCollisionPointRec(mousePoint, optionsBounds);
+
+    textureWidth = (float)creditsTexture.width;
+    textureHeight = (float)creditsTexture.height;
+    y += 80; // Ajusta la posición vertical para la siguiente opción
+    Rectangle creditsBounds = {x, y, textureWidth, textureHeight};
+    isMouseOverCredits = CheckCollisionPointRec(mousePoint, creditsBounds);
+
+    textureWidth = (float)exitTexture.width;
+    textureHeight = (float)exitTexture.height;
+    y += 80; // Ajusta la posición vertical para la siguiente opción
+    Rectangle exitBounds = {x, y, textureWidth, textureHeight};
+    isMouseOverExit = CheckCollisionPointRec(mousePoint, exitBounds);
+
+    // Maneja los eventos de clic según la opción sobre la que esté el mouse
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        PlaySound(mySound);
+
+        if (isMouseOverStartGame)
+        {
+            currentScene = START_GAME;
+        }
+        else if (isMouseOverOptions)
+        {
+            currentScene = OPTIONS;
+        }
+        else if (isMouseOverCredits)
+        {
+            currentScene = CREDITS;
+        }
+        else if (isMouseOverExit)
+        {
+            currentScene = EXIT;
+        }
+    }
+}
+
+void MenuDraw(Texture2D background, Texture2D tittleTexture, Image tittle, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture)
+{
+    BeginDrawing();
+    DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+    DrawTexture(tittleTexture, screenWidths[currentResolutionIndex] / 2 - tittle.width / 2, 60, WHITE);
+
+    // Dibuja las opciones
+    float x = (GetScreenWidth() - startGameTexture.width) / 2;
+    float y = screenHeights[currentResolutionIndex] / 2 - 60;
+
+    if (isMouseOverStartGame)
+    {
+        float scale = 1.0 + 0.1f * sin(2.0f * GetTime());
+        DrawTextureEx(startGameTexture, (Vector2){x, y}, 0.0f, scale, YELLOW);
+    }
+    else
+    {
+        DrawTexture(startGameTexture, x, y, WHITE);
+    }
+
+    y += 80;
+    if (isMouseOverOptions)
+    {
+        float scale = 1.0 + 0.1f * sin(2.0f * GetTime());
+        DrawTextureEx(optionsTexture, (Vector2){x, y}, 0.0f, scale, YELLOW);
+    }
+    else
+    {
+        DrawTexture(optionsTexture, x, y, WHITE);
+    }
+
+    y += 80;
+    if (isMouseOverCredits)
+    {
+        float scale = 1.0 + 0.1f * sin(2.0f * GetTime());
+        DrawTextureEx(creditsTexture, (Vector2){x, y}, 0.0f, scale, YELLOW);
+    }
+    else
+    {
+        DrawTexture(creditsTexture, x, y, WHITE);
+    }
+
+    y += 80;
+    if (isMouseOverExit)
+    {
+        float scale = 1.0 + 0.1f * sin(2.0f * GetTime());
+        DrawTextureEx(exitTexture, (Vector2){x, y}, 0.0f, scale, YELLOW);
+    }
+    else
+    {
+        DrawTexture(exitTexture, x, y, WHITE);
+    }
+
+    EndDrawing();
+}
+
+void StartGameUpdate(int screenWidth, int screenHeight, Sound mySound, Texture2D background, Texture2D gameOver)
+{
+
+    char *n;
+    int num;
+    int band = 0;
+    Sound rouletteSound = LoadSound("assets/Roulette_Sound.mp3");
+    bool shouldClose = false;
+    GameMusic= LoadMusicStream("MUSICGAME.mp3");
+    
+    int sectorCount = 8;
+    RouletteSector sectors[8] = {
+        {0, 45, RED},
+        {45, 90, BLUE},
+        {90, 135, RED},
+        {135, 180, BLUE},
+        {180, 225, RED},
+        {225, 270, BLUE},
+        {270, 315, RED},
+        {315, 360, BLUE}};
+
+    float rotationSpeed = 0.0f;
+    float rotation = 0.0f;
+    bool spinning = false;
+    RenderTexture2D arrowTexture = LoadRenderTexture(30, 60);
+    BeginTextureMode(arrowTexture);
+    ClearBackground(BLANK);
+
+    DrawTriangle((Vector2){0, 0}, (Vector2){15, 60}, (Vector2){30, 0}, BLACK);
+
+    EndTextureMode();
+
+    PlayMusicStream(GameMusic);
+    gameState = GAME;
+    while (!shouldClose && !WindowShouldClose())
+    {
+        UpdateMusicStream(GameMusic);
+        switch (gameState)
+        {
+        case GAME:
+            if (IsKeyPressed(KEY_SPACE) && !spinning)
+            {
+                spinning = true;
+                rotationSpeed = 20.0f + GetRandomValue(-5, 5);
+
+                PlaySound(rouletteSound);
+            }
+
+            if (spinning)
+            {
+                rotation += rotationSpeed;
+                rotationSpeed *= 0.99f;
+
+                if (rotationSpeed < 0.1f)
+                {
+                    spinning = false;
+                    rotationSpeed = 0.0f;
+                    int sectorIndex = ((int)rotation % 360) / (360 / sectorCount);
+                    Color stoppedColor = sectors[sectorIndex].color;
+
+                    if (ColorToInt(stoppedColor) != ColorToInt(RED))
+                    {
+                        questionUpdate("MATE.txt", background);
+                    }
+                    else if (ColorToInt(stoppedColor) != ColorToInt(BLUE))
+                    {
+                        questionUpdate("ESPA.txt", background);
+                    }
+                }
+            }
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawRoulette(sectors, sectorCount, rotation);
+
+            Vector2 arrowPosition = {GetScreenWidth() / 1.958f - arrowTexture.texture.width / 2.0, GetScreenHeight() / 2.0f - 199.0f};
+            DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
+            EndDrawing();
+
+            break;
+
+        case GAME_OVER:
+        {
+            Rectangle buttonRect = {GetScreenWidth() / 2 - 150, GetScreenHeight() / 2 + 250, 310, 50};
+            Color buttonColor = WHITE;
+
+            BeginDrawing();
+            DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+            DrawTexture(gameOver, GetScreenWidth() / 2 - gameOver.width / 2, 50, WHITE);
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect))
+            {
+                buttonColor = YELLOW;
+            }
+
+            if (CheckCollisionPointRec(GetMousePosition(), buttonRect) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                PlaySound(mySound);
+                shouldClose = true;
+                currentScene = MENU;
+                correctAnswers = 0;
+                currentQuestion = 1;
+            }
+
+            float buttonTextWidth = MeasureText("Volver al Menú", 40);
+            float buttonX = GetScreenWidth() / 2 - buttonTextWidth / 2;
+            float buttonY = GetScreenHeight() / 2 + 250 + (buttonRect.height - 40) / 2;
+
+            DrawTextEx(myFont, "Volver al Menú", (Vector2){buttonX, buttonY}, 40, 1, buttonColor);
+
+            int totalScore = correctAnswers * 100;
+            int HighScore;
+            FILE *Score = fopen("HighScore.txt", "r");
+            fscanf(Score, "%d", &HighScore);
+            fclose(Score);
+            float scoreTextWidth = MeasureText(TextFormat("%i", totalScore), 65);
+            float scoreX = (GetScreenWidth() - scoreTextWidth) / 2;
+            float scoreY = (GetScreenHeight() - 60) / 2 + 50;
+
+            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){scoreX, scoreY}, 65, 1, BLACK);
+            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY}, 60, 1, RED);
+
+            if (totalScore < HighScore)
+            {
+                DrawTextEx(myFont, TextFormat("%i", HighScore), (Vector2){scoreX, scoreY + 100}, 65, 1, BLACK);
+                DrawTextEx(myFont, TextFormat("%i", HighScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", HighScore), 60)) / 2, scoreY + 100}, 60, 1, RED);
+            }
+            else
+            {
+                DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY + 100}, 60, 1, RED);
+                Score = fopen("HighScore.txt", "w");
+                fprintf(Score, "%i", totalScore);
+                fclose(Score);
+            }
+
+            EndDrawing();
+
+            break;
+        }
+        }
+    }
+    StopMusicStream(GameMusic);
+    UnloadMusicStream(GameMusic);
+}
+
+void OptionsUpdate(Music menuMusic, Sound mySound, size_t optionItemsCount, OptionItem optionItems[])
+{
+    static bool muteMusic = false;
+    static bool muteSounds = false;
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        for (int i = 0; i < optionItemsCount; i++)
+        {
+            Rectangle bounds = optionItems[i].bounds;
+
+            if (CheckCollisionPointRec(mousePoint, bounds))
+            {
+                PlaySound(mySound);
+                switch (optionItems[i].action)
+                {
+                case MUTE_MUSIC:
+                    muteMusic = !muteMusic;
+                    if (muteMusic)
+                    {
+                        SetMusicVolume(menuMusic, 0.0f);
+                    }
+                    else
+                    {
+                        SetMusicVolume(menuMusic, 1.0f);
+                    }
+                    break;
+
+                case MUTE_SOUNDS:
+                    muteSounds = !muteSounds;
+                    if (muteSounds)
+                    {
+                        // Assuming SetSoundVolume takes a Sound instead of a Sound ID
+                        SetSoundVolume(mySound, 0.0f);
+                    }
+                    else
+                    {
+                        SetSoundVolume(mySound, 1.0f);
+                    }
+                    break;
+
+                case CHANGE_RESOLUTION:
+                    ChangeResolution();
+                    break;
+
+                case BACK_TO_MENU:
+                    currentScene = MENU;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, size_t optionItemsCount, OptionItem optionItems[])
+{
+    BeginDrawing();
+    DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
+    DrawTexture(optionMenuTexture, screenWidths[currentResolutionIndex] / 2 - optionMenuTexture.width / 2, 60, WHITE);
+
+    for (int i = 0; i < optionItemsCount; i++)
+    {
+        Rectangle bounds = optionItems[i].bounds;
+        Texture2D image = optionItems[i].image;
+
+        Color tint = WHITE;
+        Vector2 mousePointLocal = {GetMouseX() - bounds.x, GetMouseY() - bounds.y};
+
+        if (CheckCollisionPointRec(mousePointLocal, bounds))
+        {
+            tint = YELLOW;
+        }
+
+        DrawTextureRec(image, bounds, (Vector2){0, 0}, tint);
+    }
+
+    EndDrawing();
+}
+
+void CreditsUpdate()
+{
+}
+
+void CreditsDraw()
+{
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
+}
+
+/*--------------------------------------------------------------------------------
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣷⣄⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⢹⣿⣿⣷⣄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⢸⣿⣿⣿⣿⣷⣦⡈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢸⣿⣿⣿⣿⣿⣿⣿⣦⡈⠻⣿⠀⠈⠻⡿⠛⢿⣿⣿⡿⠿⠛⠉⢉⣀⡤⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡀⠀⠓⣄⠀⢠⠀⠉⣁⣤⣴⣶⣿⣿⡟⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⡿⠇⢀⠉⠻⠿⣿⣿⣿⣿⣇⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡏⠀⠘⠛⠋⠉⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⡀⠠⣤⣴⣿⣶⣤⣀⠙⠻⣿⣿⠀⣿⣿⣿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠐⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠻
+⡿⠂⢈⣿⣿⣿⣿⣿⣷⣦⣄⠉⠀⠛⠉⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣶⣶⣶⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⡿⠗⢀⣴
+⣧⣄⡈⠙⢿⣿⣿⣿⣿⣿⣿⡟⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⢀⣴⣿⣿
+⣿⣿⣿⣆⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠋⣠⣶⣿⣿⣿⣿
+⣿⣿⣿⣿⣆⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⡀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⣠⣾⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣆⠈⠟⢀⣿⣿⣿⣿⣿⣿⡟⠀⣼⣧⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⢁⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⠇⢠⣿⣿⣿⣿⢿⣿⣿⠁⢸⣿⣿⡆⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠋⣁⣿⣿⣿⣿⣿⠀⠻⠋⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⡿⠀⣾⣿⣿⣿⣿⠀⢻⣿⡆⠘⣿⣿⡇⠀⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠛⢉⣠⣴⠀⣿⣿⣿⣿⣿⣿⡇⠀⠾⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⡇⢰⣿⣿⣿⣿⣿⠀⡀⠻⣿⣦⡈⠛⠻⠷⠀⢿⣿⣿⣿⣿⣿⣿⡿⠛⠁⣠⣴⣿⣿⡇⢀⣿⣿⣿⣿⣿⣿⡇⢰⣶⣶⣦⣤⣤⣤⣤⣤⣈⠉⠉⢻⣿⣿
+⣿⣿⣿⣿⣿⠁⢸⣿⣿⣿⣿⣿⠀⣷⣄⠙⠻⣿⣷⣶⣶⣶⣾⣿⣿⣿⣿⠟⠁⣠⣦⣰⣿⣿⣿⠟⢀⣾⣿⣿⣿⣿⣿⣿⣇⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡄⠉⢻⣿
+⣿⣿⣿⣿⣿⠀⢸⣿⣿⣿⣿⣿⠀⢻⡟⢀⣤⡈⠙⠻⢿⣿⣿⣿⣿⣿⣿⣶⣦⣀⡉⠙⠋⠉⣁⣴⣿⡿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠇⢠⣴⣾⣿
+⣿⣿⣿⣿⣿⠀⢸⣿⣿⣿⣿⣿⣧⠀⠃⣸⣿⣿⣷⠂⣠⣈⡉⠛⠛⠿⠿⢿⣿⣿⣿⣿⣿⠿⠿⠛⠁⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠋⣁⣤⣤⣄⣼⣿⣿⣿
+⣿⣿⣿⣿⣿⠇⠸⣿⣿⣿⣿⣿⣿⣷⣄⠙⠿⣿⡏⢀⣿⣿⣿⣿⣶⣦⠀⣠⣤⣤⣤⡄⢀⣤⡔⠀⣼⣿⣿⣿⣿⣿⡟⠀⠿⠟⠋⢉⣀⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⠃⢀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣷⣄⡈⠁⠸⣿⣿⣿⣿⣿⡟⠀⣿⣿⣿⣿⠃⠸⠋⣠⣾⣿⣿⣿⣿⣿⣿⠃⣠⣴⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⡏⢀⣿⣆⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣀⡉⠙⠛⠻⠃⠸⠿⠟⠛⠋⣀⣤⣾⣿⣿⣿⣿⣿⣿⣿⠃⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⡇⢸⣿⣿⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠃⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣇⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡉⠙⠻⠁⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣄⠈⢿⣿⣿⣿⣧⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣦⣄⠈⠛⢿⡿⠷⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣷⡀⠘⠑⠀⠀⠀⣦⣀⠉⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣤⣾⣿⣿⣿⣿⣶⣤⠀⠈⠉⠉⠉⠉⢉⡉⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣄⠈⠻⠃⢠⣿⣿⣄⠘⣿⡿⣵⣝⣫⡎⢿⢿⠟⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣾⣿⣿⣿⡄⠸⣿⣿⣿⣿⣿⡿⠁⣠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠈⠛⠛⠋⢁⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+----------------------------------------------------------------------------------*/
