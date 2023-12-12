@@ -156,7 +156,7 @@ int main(void)
 
     // MAIN MENU & OPTIONS MENU //
     //================================================================================================//
-    myFont = LoadFont("assets/font.ttf");
+    myFont = LoadFont("assets/font.otf");
     Image tittle = LoadImage("assets/tittle.png");
     Texture2D tittleTexture = LoadTextureFromImage(tittle);
     Music menuMusic = LoadMusicStream("assets/menuMusic.mp3");
@@ -168,6 +168,7 @@ int main(void)
         Image bgImage = LoadImage(TextFormat("assets/holaBackground/hola%d.png", i));
         background[i - 1] = LoadTextureFromImage(bgImage);
     }
+
     Image bgGame = LoadImage("assets/bg_game.png");
     Texture2D backgroundGame = LoadTextureFromImage(bgGame);
     Sound menuButton = LoadSound("assets/menuButton.wav");
@@ -201,6 +202,7 @@ int main(void)
         switch (currentScene)
         {
         case MENU:
+            currentQuestion = 1;
             PlayMusic(menuMusic);
             MenuUpdate(menuButton, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
             MenuDraw(gameMusic, background[hola], tittleTexture, tittle, mainMenu1Texture, mainMenu2Texture, mainMenu3Texture, mainMenu4Texture);
@@ -312,7 +314,7 @@ void DrawCenteredTimer(Timer timer, int screenWidth, int screenHeight)
 
     Vector2 timerPosition = {(screenWidth - MeasureText("Tiempo restante: 00s", 20)) / 2, padding};
 
-    DrawRectangleRec(barComplete, RED);
+    DrawRectangleRec(barComplete, VIOLET);
 
     DrawTextEx(myFont, TextFormat("Tiempo restante: %02d", remainingSeconds), (Vector2){timerPosition.x, timerPosition.y}, 20, 2, WHITE);
 }
@@ -376,8 +378,8 @@ void questionUpdate(char filename[], Texture2D background)
     Question preguntas[MAX_QUESTIONS];
     int i = 0;
     timer.startTime = GetTime();
-    timer.countdown = 2;
-    Color originalColor = BLACK;
+    timer.countdown = 12;
+    Color originalColor = WHITE;
     Color hoverColor = YELLOW;
 
     if (fp == NULL)
@@ -399,24 +401,25 @@ void questionUpdate(char filename[], Texture2D background)
             ClearBackground(RAYWHITE);
             DrawTextureRec(background, (Rectangle){0, 0, screenWidths[currentResolutionIndex], screenHeights[currentResolutionIndex]}, (Vector2){0, 0}, RAYWHITE);
             DrawCenteredTimer(timer, GetScreenWidth(), GetScreenHeight());
-            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
-            float textWidth = MeasureText(preguntas[currentQuestion].question, 20);
-            float x = (GetScreenWidth() - textWidth) / 2;
-            float y = GetScreenHeight() / 3.5 - 50; // Ajustar la posición vertical según sea necesario
 
-            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 20, 1, originalColor);
+            // Calcular dinámicamente la posición y la anchura del texto en función del tamaño de la pantalla
+            float textWidth = MeasureText(preguntas[currentQuestion].question, 30);
+            float x = (GetScreenWidth() - textWidth) / 2;
+            float y = (GetScreenHeight() - 30) / 3.5 - 50; // Ajustar la posición vertical según sea necesario
+
+            DrawTextEx(myFont, preguntas[currentQuestion].question, (Vector2){x, y}, 30, 1, originalColor);
 
             // Dibujar las respuestas y verificar el color según la posición del ratón
             for (int j = 0; j < 4; j++)
             {
-                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 20);
-                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 50, textWidth, 20};
+                textWidth = MeasureText(preguntas[currentQuestion].answer[j], 30);
+                answerRect[j] = (Rectangle){(GetScreenWidth() - textWidth) / 2, y + 50 + j * 50, textWidth, 30};
 
                 Vector2 mousePointLocal = {GetMouseX() - answerRect[j].x, GetMouseY() - answerRect[j].y};
 
-                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 20}))
+                if (CheckCollisionPointRec(mousePointLocal, (Rectangle){0, 0, textWidth, 30}))
                 {
-                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, hoverColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 30, 1, hoverColor);
 
                     // Si se hizo clic en la respuesta, actualiza la variable 'answer'
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -453,7 +456,7 @@ void questionUpdate(char filename[], Texture2D background)
                 }
                 else
                 {
-                    DrawText(preguntas[currentQuestion].answer[j], (int)answerRect[j].x, (int)answerRect[j].y, 20, originalColor);
+                    DrawTextEx(myFont, preguntas[currentQuestion].answer[j], (Vector2){answerRect[j].x, answerRect[j].y}, 30, 1, originalColor);
                 }
             }
             EndDrawing();
@@ -501,10 +504,6 @@ void RunCountdown(Sound countdown, int seconds, Texture2D areYouReadyTexture, Te
         else if (countdownState.countdown == 1)
         {
             DrawTexture(number1Texture, GetScreenWidth() / 2 - number1Texture.width / 2, GetScreenHeight() / 2 - number1Texture.height / 2, WHITE);
-        }
-        else
-        {
-            DrawText("¡Preparado!", GetScreenWidth() / 2 - MeasureText("¡Preparado!", 20) / 2, GetScreenHeight() / 2 + 30, 20, GREEN);
         }
 
         EndDrawing();
@@ -765,9 +764,9 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             {
                 DrawTexture(backToMenu, x, y, WHITE);
             }
-            
+
             int totalScore = correctAnswers * 100;
-            int HighScore=0;
+            int HighScore = 0;
             FILE *Score = fopen("HighScore.dll", "rb");
             fread(&HighScore, sizeof(int), 1, Score);
             fclose(Score);
@@ -777,17 +776,17 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             float scoreY2 = (GetScreenHeight() + 300) / 2 - 70;
 
             DrawTexture(score, GetScreenWidth() / 2 - score.width / 2, GetScreenHeight() / 2 - 150, WHITE);
-            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY}, 60, 1, RED);
+            DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY}, 60, 1, WHITE);
 
             if (totalScore < HighScore)
             {
                 DrawTexture(highscore, GetScreenWidth() / 2 - highscore.width / 2, GetScreenHeight() / 2 + score.height - 20, WHITE);
-                DrawTextEx(myFont, TextFormat("%i", HighScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", HighScore), 60)) / 2, scoreY2}, 60, 1, RED);
+                DrawTextEx(myFont, TextFormat("%i", HighScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", HighScore), 60)) / 2, scoreY2}, 60, 1, WHITE);
             }
             else
             {
                 DrawTexture(highscore, GetScreenWidth() / 2 - highscore.width / 2, GetScreenHeight() / 2 + score.height - 20, WHITE);
-                DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY2}, 60, 1, RED);
+                DrawTextEx(myFont, TextFormat("%i", totalScore), (Vector2){(GetScreenWidth() - MeasureText(TextFormat("%i", totalScore), 60)) / 2, scoreY2}, 60, 1, WHITE);
                 Score = fopen("HighScore.dll", "wb");
                 fwrite(&totalScore, sizeof(int), 1, Score);
                 fclose(Score);
