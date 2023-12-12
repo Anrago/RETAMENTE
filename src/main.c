@@ -117,7 +117,7 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
 void StartGameDraw(Texture2D background);
 void OptionsUpdate(Music menuMusic, Music gameMusic, Sound mySound, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture);
 void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Texture2D startGameTexture, Texture2D optionsTexture, Texture2D creditsTexture, Texture2D exitTexture);
-void CreditsUpdate();
+void CreditsUpdate(Texture2D credits1, Texture2D credits2);
 void CreditsDraw();
 //================================================================================================//
 
@@ -191,6 +191,10 @@ int main(void)
     Texture2D highscoreTexture = LoadTextureFromImage(highscore);
     Image gameOver = LoadImage("assets/game_over.png");
     Texture2D gameOverTexture = LoadTextureFromImage(gameOver);
+    Image credits1 = LoadImage("assets/credits1.png");
+    Texture2D credits1Texture = LoadTextureFromImage(credits1);
+    Image credits2 = LoadImage("assets/credits2.png");
+    Texture2D credits2Texture = LoadTextureFromImage(credits2);
     //================================================================================================//
 
     PlayMusicStream(menuMusic);
@@ -222,8 +226,7 @@ int main(void)
 
         case CREDITS:
             PlayMusic(menuMusic);
-            CreditsUpdate();
-            CreditsDraw();
+            CreditsUpdate(credits1Texture, credits2Texture);
             break;
 
         case EXIT:
@@ -952,17 +955,44 @@ void OptionsDraw(Texture2D background, Texture2D optionMenuTexture, Texture2D st
     EndDrawing();
 }
 
-void CreditsUpdate()
+void CreditsUpdate(Texture2D credits1, Texture2D credits2)
 {
-}
 
-void CreditsDraw()
-{
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    EndDrawing();
-}
+    double startTime = GetTime();
+    double duration = 8.0; // Duración en segundos del primer fondo
 
+    bool secondBackgroundShown = false;
+
+    while (!WindowShouldClose())
+    {
+        double currentTime = GetTime();
+        double elapsedTime = currentTime - startTime;
+
+        if (elapsedTime >= duration)
+        {
+            DrawTexture(credits2, 0, 0, WHITE);
+            secondBackgroundShown = true;
+            elapsedTime = 0;
+        }
+        else
+        {
+            DrawTexture(credits1, 0, 0, WHITE);
+        }
+
+        if (secondBackgroundShown && IsKeyPressed(KEY_SPACE))
+        {
+            currentScene = MENU;
+            break;
+        }
+
+        EndDrawing();
+
+        if (elapsedTime >= duration + 1.0)
+        {
+            break;
+        }
+    }
+}
 /*--------------------------------------------------------------------------------
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣷⣄⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
@@ -996,3 +1026,5 @@ void CreditsDraw()
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣾⣿⣿⣿⡄⠸⣿⣿⣿⣿⣿⡿⠁⣠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄⠈⠛⠛⠋⢁⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ----------------------------------------------------------------------------------*/
+
+// hola
