@@ -831,12 +831,12 @@ void OptionsUpdate(Music menuMusic, Music gameMusic, Sound mySound, Texture2D st
             muteMusic = !muteMusic;
             if (muteMusic)
             {
-                SetMusicVolume(gameMusic, 0.0f);
+                SetMusicVolume(GameMusic, 0.0f);
                 SetMusicVolume(menuMusic, 0.0f);
             }
             else
             {
-                SetMusicVolume(gameMusic, 1.0f);
+                SetMusicVolume(GameMusic, 1.0f);
                 SetMusicVolume(menuMusic, 1.0f);
             }
         }
