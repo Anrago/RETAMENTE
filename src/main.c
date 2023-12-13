@@ -382,7 +382,7 @@ void questionUpdate(char filename[], Texture2D background)
     int i = 0;
 
     timer.startTime = GetTime();
-    timer.countdown = 12;
+    timer.countdown = 30;
     Color originalColor = BLACK;
     Color hoverColor = YELLOW;
 
@@ -712,6 +712,9 @@ void StartGameUpdate(Music gameMusic, int screenWidth, int screenHeight, Sound m
             DrawTexturePro(arrowTexture.texture, (Rectangle){0, 0, arrowTexture.texture.width, -arrowTexture.texture.height}, (Rectangle){arrowPosition.x, arrowPosition.y, arrowTexture.texture.width, arrowTexture.texture.height}, (Vector2){arrowTexture.texture.width / 2, arrowTexture.texture.height}, 0.0f, WHITE);
 
             EndDrawing();
+
+            UnloadImage(pressSpace);
+            UnloadTexture(pressSpaceTexture);
 
             break;
 
